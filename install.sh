@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# codebreak installer untuk Linux & macOS.
+# codebreak installer for Linux.
 # Usage: curl -fsSL https://raw.githubusercontent.com/dwitatwa/codebreak/main/install.sh | bash
 set -euo pipefail
 
@@ -8,19 +8,18 @@ INSTALL_DIR="${CODEBREAK_INSTALL_DIR:-$HOME/.local/bin}"
 
 os="$(uname -s)"
 arch="$(uname -m)"
-case "$os" in
-  Linux) os_target="linux" ;;
-  Darwin) os_target="darwin" ;;
-  *) echo "OS tidak didukung: $os (gunakan install.ps1 di Windows)" >&2; exit 1 ;;
-esac
+if [ "$os" != "Linux" ]; then
+  echo "Unsupported OS: $os (this installer supports Linux; Windows uses install.ps1)" >&2
+  exit 1
+fi
 case "$arch" in
   x86_64|amd64) arch_target="x64" ;;
   aarch64|arm64) arch_target="arm64" ;;
-  *) echo "Arsitektur tidak didukung: $arch" >&2; exit 1 ;;
+  *) echo "Unsupported architecture: $arch" >&2; exit 1 ;;
 esac
 
 asset="codebreak-${os_target}-${arch_target}"
-echo "→ Mengunduh ${asset} dari github.com/${REPO} ..."
+echo "→ Downloading ${asset} from github.com/${REPO} ..."
 
 download_url="$(
   curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
@@ -29,7 +28,7 @@ download_url="$(
     | sed 's/"$//'
 )"
 if [ -z "${download_url}" ]; then
-  echo "Tidak menemukan rilis untuk ${asset}. Cek https://github.com/${REPO}/releases" >&2
+  echo "No release found for ${asset}. Check https://github.com/${REPO}/releases" >&2
   exit 1
 fi
 
@@ -44,11 +43,11 @@ case ":$PATH:" in
   *":${INSTALL_DIR}:"*) ;;
   *)
     echo ""
-    echo "⚠ ${INSTALL_DIR} belum ada di PATH. Tambahkan ke ~/.bashrc atau ~/.zshrc:"
+    echo "⚠ ${INSTALL_DIR} is not in your PATH. Add this to ~/.bashrc or ~/.zshrc:"
     echo "    export PATH=\"\$PATH:${INSTALL_DIR}\""
     ;;
 esac
 
 echo ""
-echo "✓ codebreak terpasang di ${INSTALL_DIR}/codebreak"
-echo "  Coba: codebreak doctor"
+echo "✓ codebreak installed at ${INSTALL_DIR}/codebreak"
+echo "  Try: codebreak doctor"

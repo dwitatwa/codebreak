@@ -26,7 +26,7 @@ codebreak explain "payment webhook"  # the LLM finds the relevant files itself
 
 ### End user — no Node required, one binary
 
-Linux / macOS:
+Linux:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/dwitatwa/codebreak/main/install.sh | bash
@@ -50,7 +50,7 @@ Requires [Bun](https://bun.sh) ≥ 1.1 (Node is not needed):
 ```bash
 git clone git@github.com:dwitatwa/codebreak.git && cd codebreak
 bun install
-bun run build          # viewer shell + asset manifest + binaries for 5 platforms
+bun run build          # viewer shell + asset manifest + Linux & Windows binaries
 ln -sf "$(pwd)/packages/cli/dist/cli.js" ~/.local/bin/codebreak   # optional global command
 bun test               # 63 unit/integration tests
 ```
@@ -187,7 +187,7 @@ latest release, so publish at least one release for them to work.
 ```
 packages/
 ├── cli/       # the "codebreak" bin (Bun) — commander, simple-git, openai SDK
-│   ├── scripts/build.ts   # shell → asset manifest → bundle + compile 5 platforms
+│   ├── scripts/build.ts   # shell → asset manifest → bundle + compile Linux & Windows binaries
 │   └── src/
 │       ├── commands/   # explain | add | view | skill | init | remove | doctor
 │       ├── core/       # orchestrator + context gatherers per input mode
