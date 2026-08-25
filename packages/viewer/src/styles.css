@@ -1,12 +1,46 @@
 @import 'tailwindcss';
 @plugin "@tailwindcss/typography";
 
-/* Collapsible <details> dari dokumen MDX */
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+body {
+  background-color: #09090b;
+}
+
+/* Thin dark scrollbars for panels and the page */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── Collapsible <details> blocks emitted inside documents ────────────────── */
 .prose details {
-  @apply my-3 rounded-lg border border-neutral-200 bg-white;
+  margin-block: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #27272a;
+  background-color: #18181b;
 }
 .prose details > summary {
-  @apply cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-neutral-800;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e4e4e7;
   list-style: none;
 }
 .prose details > summary::-webkit-details-marker {
@@ -16,26 +50,41 @@
   content: '▸';
   display: inline-block;
   margin-right: 0.5rem;
-  color: #059669;
+  color: #34d399;
   transition: transform 0.15s ease;
 }
 .prose details[open] > summary::before {
   transform: rotate(90deg);
 }
 .prose details > summary:hover {
-  @apply text-emerald-700;
+  color: #34d399;
+}
+.prose details[open] > *:not(summary) {
+  animation: cb-fade-in 0.18s ease-out;
 }
 .prose details > *:not(summary) {
-  @apply mx-4 mb-4 mt-2;
+  margin: 0.5rem 1rem 1rem;
 }
 
-/* Fallback konten mentah saat MDX gagal dikompilasi */
+@keyframes cb-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Raw-text fallback shown when MDX compilation fails */
 .cb-raw {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* Shiki github-dark di dalam prose terang: pastikan pre punya radius & overflow rapi */
+/* Shiki blocks already carry inline github-dark colors; keep edges tidy */
 .prose pre {
   overflow-x: auto;
   border-radius: 0.5rem;
+  border: 1px solid #27272a;
 }

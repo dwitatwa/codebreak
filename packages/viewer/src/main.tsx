@@ -10,7 +10,7 @@ import './styles.css'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <div className="flex min-h-screen bg-neutral-50 text-neutral-900">
+      <div className="flex min-h-screen bg-zinc-950 text-zinc-100">
         <LiveReload />
         <Sidebar />
         <main className="min-w-0 flex-1">
