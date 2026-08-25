@@ -14,7 +14,7 @@ export const TYPE_DOT: Record<string, string> = {
 export function TypeDot({ type }: { type: string }) {
   return (
     <span
-      className={`inline-block h-2 w-2 shrink-0 rounded-full ${TYPE_DOT[type] ?? 'bg-zinc-500'}`}
+      className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${TYPE_DOT[type] ?? 'bg-slate-500'}`}
       title={type}
     />
   )
@@ -22,16 +22,16 @@ export function TypeDot({ type }: { type: string }) {
 
 export function TypeBadge({ type }: { type: string }) {
   const styles: Record<string, string> = {
-    changes: 'bg-emerald-500/10 text-emerald-300 ring-emerald-500/30',
-    commit: 'bg-sky-500/10 text-sky-300 ring-sky-500/30',
-    file: 'bg-violet-500/10 text-violet-300 ring-violet-500/30',
-    description: 'bg-amber-500/10 text-amber-300 ring-amber-500/30',
-    note: 'bg-rose-500/10 text-rose-300 ring-rose-500/30',
+    changes: 'bg-emerald-500/10 text-emerald-300 ring-emerald-500/25',
+    commit: 'bg-sky-500/10 text-sky-300 ring-sky-500/25',
+    file: 'bg-violet-500/10 text-violet-300 ring-violet-500/25',
+    description: 'bg-amber-500/10 text-amber-300 ring-amber-500/25',
+    note: 'bg-rose-500/10 text-rose-300 ring-rose-500/25',
   }
   return (
     <span
       className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset ${
-        styles[type] ?? 'bg-zinc-800 text-zinc-400 ring-zinc-700'
+        styles[type] ?? 'bg-slate-800 text-slate-400 ring-slate-700'
       }`}
     >
       {type}
@@ -71,7 +71,6 @@ export default function Sidebar() {
     fetchDocs()
       .then((list) => alive && setDocs(list))
       .catch((err) => alive && setError(String(err)))
-    // re-fetch on page change (e.g. right after a new document is created)
     return () => {
       alive = false
     }
@@ -108,15 +107,15 @@ export default function Sidebar() {
 
   if (collapsed) {
     return (
-      <aside className="sticky top-0 flex h-screen w-14 shrink-0 flex-col items-center border-r border-zinc-800 bg-zinc-900 py-4">
-        <Link to="/" className="mb-4 rounded-md p-1 hover:bg-zinc-800" title="Home">
-          <div className="flex h-7 w-7 items-center justify-center rounded bg-emerald-500/15 text-sm font-bold text-emerald-400">
+      <aside className="sticky top-0 flex h-screen w-14 shrink-0 flex-col items-center border-r border-slate-800/70 bg-[#161720] py-5">
+        <Link to="/" className="mb-6 rounded-md p-1 hover:bg-slate-800/60" title="Home">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/15 text-sm font-bold text-emerald-400">
             c
           </div>
         </Link>
         <button
           onClick={toggleCollapse}
-          className="rounded-md p-2 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200"
+          className="rounded-md p-2 text-slate-500 hover:bg-slate-800/60 hover:text-slate-200"
           title="Expand sidebar"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -128,17 +127,20 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900">
-      <div className="flex items-center justify-between px-4 pt-4">
-        <Link to="/" className="block rounded-md px-1 py-0.5 hover:opacity-80">
-          <div className="text-lg font-bold tracking-tight">
+    <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col border-r border-slate-800/70 bg-[#161720]">
+      {/* Brand + collapse */}
+      <div className="flex items-center justify-between px-5 pt-5">
+        <Link to="/" className="block rounded-md px-0.5 py-0.5 hover:opacity-90">
+          <div className="text-[17px] font-semibold tracking-tight text-slate-100">
             code<span className="text-emerald-400">break</span>
           </div>
-          <div className="-mt-0.5 text-[11px] text-neutral-500">code explanation documents</div>
+          <div className="-mt-0.5 text-[11px] font-normal text-slate-500">
+            code explanation documents
+          </div>
         </Link>
         <button
           onClick={toggleCollapse}
-          className="rounded-md p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200"
+          className="rounded-md p-1.5 text-slate-600 hover:bg-slate-800/60 hover:text-slate-300"
           title="Collapse sidebar"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -147,10 +149,11 @@ export default function Sidebar() {
         </button>
       </div>
 
-      <div className="px-4 pb-3 pt-3">
+      {/* Search */}
+      <div className="px-4 pb-3 pt-4">
         <div className="relative">
           <svg
-            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-600"
             width="13"
             height="13"
             viewBox="0 0 24 24"
@@ -164,13 +167,14 @@ export default function Sidebar() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search documents…"
-            className="w-full rounded-md border border-zinc-800 bg-zinc-950 py-1.5 pl-8 pr-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:border-emerald-500/60 focus:outline-none focus:ring-1 focus:ring-emerald-500/40"
+            placeholder="Search…"
+            className="w-full rounded-lg border border-slate-800/80 bg-[#11131b] py-2 pl-9 pr-3 text-[13px] text-slate-200 placeholder:text-slate-600 transition-colors focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30"
           />
         </div>
 
+        {/* Type filters */}
         {!searching && (
-          <div className="mt-3 flex flex-wrap gap-1">
+          <div className="mt-3 flex flex-wrap gap-1.5">
             {FILTERS.map((f) => {
               const active = filter === f
               const count = f === 'all' ? docs.length : (counts.get(f) ?? 0)
@@ -178,13 +182,14 @@ export default function Sidebar() {
                 <button
                   key={f}
                   onClick={() => setFilter(active ? 'all' : f)}
-                  className={`rounded border px-1.5 py-0.5 text-[11px] capitalize transition-colors ${
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium capitalize transition-all ${
                     active
-                      ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-300'
-                      : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+                      ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-inset ring-emerald-500/40'
+                      : 'text-slate-500 hover:bg-slate-800/50 hover:text-slate-300'
                   }`}
                 >
-                  {f} · {count}
+                  {f}
+                  <span className="ml-1 opacity-60">{count}</span>
                 </button>
               )
             })}
@@ -192,16 +197,19 @@ export default function Sidebar() {
         )}
       </div>
 
-      <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-6 cb-scroll">
-        {error && <p className="px-2 py-3 text-sm text-red-400">{error}</p>}
+      {/* Document list */}
+      <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-8 cb-scroll">
+        {error && <p className="px-3 py-4 text-sm text-rose-400">{error}</p>}
         {!error && visible.length === 0 && (
-          <p className="px-2 py-3 text-sm text-zinc-500">
-            {searching || filter !== 'all' ? 'No matching documents.' : 'No documents yet.'}
-          </p>
+          <div className="px-3 py-10 text-center">
+            <p className="text-sm text-slate-600">
+              {searching || filter !== 'all' ? 'No matching documents.' : 'No documents yet.'}
+            </p>
+          </div>
         )}
         {[...groups.entries()].map(([label, items]) => (
-          <div key={label} className="mt-4">
-            <div className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-600">
+          <div key={label} className="mt-5 first:mt-2">
+            <div className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-600">
               {label}
             </div>
             {items.map((doc) => {
@@ -210,14 +218,16 @@ export default function Sidebar() {
                 <Link
                   key={doc.slug}
                   to={`/doc/${doc.slug}`}
-                  className={`mb-0.5 flex items-center gap-2 rounded-md border-l-2 py-1.5 pl-2 pr-1 text-sm transition-colors ${
+                  className={`group mb-1 flex items-center gap-2.5 rounded-lg py-2 pl-2.5 pr-2 text-[13px] transition-colors ${
                     active
-                      ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200'
-                      : 'border-transparent text-zinc-400 hover:bg-zinc-800/70 hover:text-zinc-200'
+                      ? 'bg-emerald-500/10 text-emerald-200'
+                      : 'text-slate-400 hover:bg-slate-800/40 hover:text-slate-200'
                   }`}
                 >
-                  <TypeDot type={doc.type} />
-                  <span className="truncate">{truncateTitle(doc.title)}</span>
+                  <span
+                    className={`h-0.5 w-0.5 shrink-0 rounded-full ${TYPE_DOT[doc.type] ?? 'bg-slate-500'}`}
+                  />
+                  <span className="truncate leading-snug">{truncateTitle(doc.title)}</span>
                 </Link>
               )
             })}
@@ -229,5 +239,5 @@ export default function Sidebar() {
 }
 
 function truncateTitle(title: string): string {
-  return title.length > 34 ? `${title.slice(0, 33)}…` : title
+  return title.length > 32 ? `${title.slice(0, 31)}…` : title
 }
