@@ -61,7 +61,8 @@ Override per column without editing the file: `--title`, `--type`, `--source`, `
     <CodeBlock lang="ts">
 
       ```ts
-      (the EXACT code excerpt, copied verbatim, < ~30 lines)
+      (the COMPLETE, CONTIGUOUS slice of the file covering the block's
+       `lines` range — verbatim, every line, no elision, no "...", no diff markers)
       ```
 
     </CodeBlock>
@@ -75,6 +76,9 @@ Override per column without editing the file: `--title`, `--type`, `--source`, `
   ```
 - The code inside `<CodeBlock>` MUST be written as a fenced code block (```lang … ```)
   so MDX does not mis-parse it.
+- The code block MUST be the complete, contiguous slice of the file covering the
+  block's `lines` range — verbatim, no elision, no `…`, no diff markers, no skipping.
+  If the block says `lines="28-41"`, the code must contain file lines 28–41 exactly.
 - Annotate only the **load-bearing lines** (control flow, side effects, edge cases,
   subtle logic). Skip boilerplate. One short note per line — no long paragraphs.
 - Depth follows the request: `overview` = architecture only, no function detail;
