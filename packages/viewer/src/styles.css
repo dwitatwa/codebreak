@@ -1,33 +1,35 @@
 @import 'tailwindcss';
 @plugin "@tailwindcss/typography";
 
+
 /* ── Type system: IBM Plex ────────────────────────────────────────────────── */
 @theme {
   --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* ── codebreak palette ─────────────────────────────────────────────────── */
-  /* primary   #092328  → page background, darkest layer                     */
-  /* secondary #12544F  → panels, raised surfaces, sidebar                   */
-  /* third     #2A835F  → accents, active states, links, type indicators     */
-  /* fourth    #8BBB92  → highlights, hover text, brand accent, secondary txt */
+  /* 1  #37353E  → page background, darkest layer                            */
+  /* 2  #44444E  → panels, raised surfaces, sidebar                            */
+  /* 3  #715A5A  → accents, active states, links, type indicators             */
+  /* 4  #D3DAD9  → highlights, hover text, brand accent, secondary text         */
 
-  --color-bg: #092328;
-  --color-panel: #12544f;
-  --color-accent: #2a835f;
-  --color-highlight: #8bbb92;
+  --color-bg: #37353e;
+  --color-panel: #44444e;
+  --color-accent: #715a5a;       /* for backgrounds: buttons, tints, active fills */
+  --color-accent-text: #c4a8a8;  /* for text/links on dark — same hue, lifted to pass AA */
+  --color-highlight: #d3dad9;
 
-  /* Text scale on the dark-green surfaces */
-  --color-text: #d6e4df;
-  --color-text-muted: #7ba39a;
-  --color-text-faint: #4d7268;
+  /* Text scale on the dark surfaces — tuned for WCAG contrast */
+  --color-text: #d3dad9;       /* 8.5:1 on bg, 6.8:1 on panel — PASS */
+  --color-text-muted: #b0b8b6;  /* 6:1 on bg, 4.8:1 on panel — PASS */
+  --color-text-faint: #8e9694;  /* 4:1 on bg, 3.2:1 on panel — AA-large */
 
   /* Borders derived from the panel color */
-  --color-border: #1a6963;
-  --color-border-subtle: #16524e;
+  --color-border: #52525e;
+  --color-border-subtle: #4a4a54;
 
   /* Recessed inputs */
-  --color-inset: #0a2e2b;
+  --color-inset: #2e2d35;
 }
 
 /* ── Base ─────────────────────────────────────────────────────────────────── */
@@ -127,10 +129,10 @@ body {
 /* ── Prose color overrides for the green palette ──────────────────────────── */
 .prose-invert {
   --tw-prose-body: var(--color-text);
-  --tw-prose-headings: #e8f4f0;
-  --tw-prose-links: var(--color-highlight);
-  --tw-prose-bold: #e8f4f0;
-  --tw-prose-code: var(--color-highlight);
+  --tw-prose-headings: #e8eaed;
+  --tw-prose-links: var(--color-accent-text);
+  --tw-prose-bold: #e8eaed;
+  --tw-prose-code: var(--color-accent-text);
   --tw-prose-quotes: var(--color-text-muted);
   --tw-prose-bullets: var(--color-accent);
   --tw-prose-hr: var(--color-border-subtle);

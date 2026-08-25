@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { ArrowUp } from 'lucide-react'
 import { fetchDocHtml, fetchDocs, type DocMeta } from '../api'
 import { TypeBadge } from '../components/Sidebar'
 
@@ -132,7 +133,7 @@ export default function DocPage() {
               )}
             </div>
             {meta && (
-              <h1 className="mt-1 truncate text-base font-semibold tracking-tight" style={{ color: '#e8f4f0' }}>
+              <h1 className="mt-1 truncate text-base font-semibold tracking-tight" style={{ color: '#e8eaed' }}>
                 {meta.title}
               </h1>
             )}
@@ -225,13 +226,11 @@ export default function DocPage() {
           style={{
             backgroundColor: 'var(--color-accent)',
             color: 'var(--color-bg)',
-            boxShadow: '0 4px 20px rgba(42,131,95,0.3)',
+            boxShadow: '0 4px 20px rgba(113,90,90,0.3)',
           }}
           title="Back to top"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <ArrowUp size={16} />
         </button>
       )}
     </div>

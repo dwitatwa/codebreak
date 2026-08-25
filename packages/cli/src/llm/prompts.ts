@@ -40,6 +40,11 @@ function depthInstruction(depth: Depth): string {
   }
 }
 
+/** Summary label for collapsible blocks, localized (e.g. "Block: fn · lines 12-40") */
+export function blockLabel(locale: string): string {
+  return locale === 'id' ? 'Blok: {name} · baris {range}' : 'Block: {name} · lines {range}'
+}
+
 /**
  * Kontrak output ketat supaya hasil selalu dokumen MDX yang valid:
  * markdown murni + elemen HTML native (<details>/<summary>) saja.
@@ -47,6 +52,7 @@ function depthInstruction(depth: Depth): string {
 export function buildSystemPrompt(depth: Depth, locale: string): string {
   const lang = localeName(locale)
   const summary = tldrHeading(locale)
+  const block = blockLabel(locale)
   return [
     'You are a senior software engineer writing an explanatory document about code for another developer.',
     '',
@@ -61,7 +67,7 @@ export function buildSystemPrompt(depth: Depth, locale: string): string {
     '3. After that, create one "### path/to/file.ext" section per file discussed.',
     '4. Inside a file section, wrap each explained unit in a native HTML collapsible:',
     '   <details open>',
-    '   <summary>Blok: functionName · baris 12-40</summary>',
+    `   <summary>${block.replace('{name}', 'functionName').replace('{range}', '12-40')}</summary>`,
     '   explanation paragraphs...',
     '   ```lang',
     '   short exact code excerpt',

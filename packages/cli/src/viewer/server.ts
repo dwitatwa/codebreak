@@ -158,6 +158,16 @@ export function startViewerServer(opts: ViewerServerOptions): ViewerServer {
         })
       }
 
+      // SPA fallback: any path that isn't an API route or a static asset
+      // (e.g. /doc/some-slug) gets index.html so React Router can handle it.
+      // This makes direct-refresh on deep links work.
+      const indexBody = readAssetFromDisk('index.html') ?? ASSETS['index.html']
+      if (indexBody !== undefined) {
+        return new Response(indexBody, {
+          headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-cache' },
+        })
+      }
+
       return new Response('not found', { status: 404 })
     },
   })

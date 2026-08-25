@@ -1,23 +1,25 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import { fetchDocs, type DocMeta } from '../api'
 import { relativeDate, TypeBadge, TYPE_COLOR } from '../components/Sidebar'
 
 const TYPE_ORDER = ['changes', 'commit', 'file', 'description', 'note'] as const
 
-function Skeleton() {
+function HomeSkeleton() {
   return (
-    <div className="animate-pulse">
-      <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-16 rounded-lg" style={{ backgroundColor: 'var(--color-panel)', opacity: 0.5 }} />
-        ))}
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-lg" style={{ backgroundColor: 'var(--color-panel)', opacity: 0.5 }} />
-        ))}
-      </div>
+    <div className="grid gap-3 sm:grid-cols-2">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div
+          key={i}
+          className="animate-pulse rounded-lg p-4"
+          style={{ backgroundColor: 'var(--color-panel)' }}
+        >
+          <div className="mb-2 h-3 w-1/3 rounded" style={{ backgroundColor: 'var(--color-inset)' }} />
+          <div className="mb-1 h-4 w-3/4 rounded" style={{ backgroundColor: 'var(--color-inset)' }} />
+          <div className="h-3 w-1/2 rounded" style={{ backgroundColor: 'var(--color-inset)' }} />
+        </div>
+      ))}
     </div>
   )
 }
@@ -45,15 +47,23 @@ export default function Home() {
     }
   }, [])
 
-  if (loading) return <div className="mx-auto max-w-4xl px-8 py-10"><Skeleton /></div>
-  if (error) return <div className="p-10" style={{ color: '#e87878' }}>{error}</div>
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-4xl px-8 py-10">
+        <div className="mb-2 h-7 w-1/3 animate-pulse rounded" style={{ backgroundColor: 'var(--color-panel)' }} />
+        <div className="mb-8 h-4 w-1/2 animate-pulse rounded" style={{ backgroundColor: 'var(--color-panel)' }} />
+        <HomeSkeleton />
+      </div>
+    )
+  }
+  if (error) return <div className="p-10" style={{ color: '#e8a0a0' }}>{error}</div>
 
   const counts = new Map<string, number>()
   for (const doc of docs) counts.set(doc.type, (counts.get(doc.type) ?? 0) + 1)
 
   return (
     <div className="mx-auto max-w-4xl px-8 py-10">
-      <h1 className="text-2xl font-bold tracking-tight" style={{ color: '#e8f4f0' }}>
+      <h1 className="text-2xl font-bold tracking-tight" style={{ color: '#e8eaed' }}>
         Documents
       </h1>
       <p className="mt-1 text-sm" style={{ color: 'var(--color-text-muted)' }}>
@@ -63,10 +73,7 @@ export default function Home() {
       {docs.length === 0 ? (
         <div
           className="mt-10 rounded-lg border border-dashed p-8 text-center"
-          style={{
-            backgroundColor: 'color-mix(in srgb, var(--color-panel) 30%, var(--color-bg))',
-            borderColor: 'var(--color-border)',
-          }}
+          style={{ borderColor: 'var(--color-border)' }}
         >
           <p style={{ color: 'var(--color-text-muted)' }}>No documents yet.</p>
           <pre
@@ -93,8 +100,8 @@ codebreak explain "user authentication flow"`}
             <div
               className="rounded-lg px-4 py-3"
               style={{
-                backgroundColor: 'rgba(42,131,95,0.12)',
-                border: '1px solid rgba(42,131,95,0.3)',
+                backgroundColor: 'rgba(113,90,90,0.15)',
+                border: '1px solid rgba(113,90,90,0.3)',
               }}
             >
               <div className="text-2xl font-bold" style={{ color: 'var(--color-highlight)' }}>
@@ -109,7 +116,7 @@ codebreak explain "user authentication flow"`}
                 key={t}
                 className="rounded-lg px-4 py-3"
                 style={{
-                  backgroundColor: 'color-mix(in srgb, var(--color-panel) 40%, var(--color-bg))',
+                  backgroundColor: 'var(--color-panel)',
                   border: '1px solid var(--color-border-subtle)',
                 }}
               >
@@ -139,18 +146,16 @@ codebreak explain "user authentication flow"`}
               <Link
                 key={doc.slug}
                 to={`/doc/${doc.slug}`}
-                className="group rounded-lg p-4 transition-all hover:-translate-y-0.5"
+                className="group block rounded-lg p-4 transition-all hover:-translate-y-0.5"
                 style={{
-                  backgroundColor: 'color-mix(in srgb, var(--color-panel) 30%, var(--color-bg))',
+                  backgroundColor: 'var(--color-panel)',
                   border: '1px solid var(--color-border-subtle)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(42,131,95,0.5)'
-                  e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--color-panel) 50%, var(--color-bg))'
+                  e.currentTarget.style.borderColor = 'rgba(113,90,90,0.5)'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = 'var(--color-border-subtle)'
-                  e.currentTarget.style.backgroundColor = 'color-mix(in srgb, var(--color-panel) 30%, var(--color-bg))'
                 }}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -160,9 +165,12 @@ codebreak explain "user authentication flow"`}
                       {relativeDate(doc.date)}
                     </span>
                   </div>
-                  <span style={{ color: 'var(--color-text-faint)' }} className="transition-colors group-hover:text-[var(--color-highlight)]">→</span>
+                  <ArrowRight
+                    size={14}
+                    className="text-[var(--color-text-faint)] transition-colors group-hover:text-[var(--color-highlight)]"
+                  />
                 </div>
-                <div className="mt-2 truncate font-medium" style={{ color: '#e8f4f0' }}>
+                <div className="mt-2 truncate font-medium" style={{ color: '#e8eaed' }}>
                   {doc.title}
                 </div>
                 <p className="truncate text-sm" style={{ color: 'var(--color-text-muted)' }}>

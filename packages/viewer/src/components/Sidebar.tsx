@@ -1,16 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { Search, Code2, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { fetchDocs } from '../api'
 import type { DocMeta } from '../docs-meta'
 
-/* ── Type → color (mapped into the green palette via opacity) ──────────────── */
+/* ── Type → color (mapped into the palette) ───────────────────────────────── */
 
 export const TYPE_COLOR: Record<string, string> = {
-  changes: '#2a835f',
-  commit: '#8bbb92',
-  file: '#4a9d7e',
-  description: '#6ba889',
-  note: '#3d7060',
+  changes: '#c4a8a8',
+  commit: '#d3dad9',
+  file: '#9a8e8e',
+  description: '#b0a4a4',
+  note: '#8a7a7a',
 }
 
 export function TypeBadge({ type }: { type: string }) {
@@ -45,37 +46,28 @@ export function relativeDate(iso: string): string {
 /* ── A single logbook entry ────────────────────────────────────────────────── */
 
 function Entry({ doc, active }: { doc: DocMeta; active: boolean }) {
-  const hex = TYPE_COLOR[doc.type] ?? '#4d7268'
   return (
     <Link
       to={`/doc/${doc.slug}`}
-      className="group block rounded-lg px-3 py-2.5 transition-colors"
-      style={active ? { backgroundColor: `${hex}1a` } : undefined}
+      className="block rounded-lg px-3 py-2.5 transition-colors"
+      style={active ? { backgroundColor: 'rgba(113,90,90,0.15)' } : undefined}
       onMouseEnter={(e) => {
-        if (!active) e.currentTarget.style.backgroundColor = 'rgba(139,187,146,0.06)'
+        if (!active) e.currentTarget.style.backgroundColor = 'rgba(211,218,217,0.06)'
       }}
       onMouseLeave={(e) => {
         if (!active) e.currentTarget.style.backgroundColor = 'transparent'
       }}
     >
-      <div className="flex items-center gap-2.5">
-        <span
-          className="h-1.5 w-1.5 shrink-0 rounded-full transition-opacity"
-          style={{ backgroundColor: hex, opacity: active ? 1 : 0.5 }}
-        />
-        <span
-          className="flex-1 truncate text-[13px] font-medium leading-snug transition-colors"
-          style={{
-            color: active ? '#e8f4f0' : 'var(--color-text)',
-          }}
-        >
-          {doc.title}
-        </span>
-      </div>
+      <span
+        className="block truncate text-[13px] font-medium leading-snug"
+        style={{ color: active ? '#e8eaed' : 'var(--color-text)' }}
+      >
+        {doc.title}
+      </span>
       {doc.source && (
-        <p className="mt-1 truncate pl-4 text-[11px]" style={{ color: 'var(--color-text-faint)' }}>
+        <span className="mt-0.5 block truncate text-[11px]" style={{ color: 'var(--color-text-faint)' }}>
           {doc.source}
-        </p>
+        </span>
       )}
     </Link>
   )
@@ -108,9 +100,10 @@ export default function Sidebar() {
   const [docs, setDocs] = useState<DocMeta[]>([])
   const [error, setError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
-  const [searchOpen, setSearchOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('cb-sidebar') === 'collapsed')
   const location = useLocation()
+  const searchRef = useRef<HTMLInputElement>(null)
+  const isMac = typeof navigator !== 'undefined' && /Mac|iP(hone|ad|od)/.test(navigator.platform)
 
   useEffect(() => {
     let alive = true
@@ -121,6 +114,25 @@ export default function Sidebar() {
       alive = false
     }
   }, [location.pathname])
+
+  // ⌘K / Ctrl+K focuses search; '/' also focuses when not typing in an input
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        searchRef.current?.focus()
+      } else if (
+        e.key === '/' &&
+        !(e.target instanceof HTMLInputElement) &&
+        !(e.target instanceof HTMLTextAreaElement)
+      ) {
+        e.preventDefault()
+        searchRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const toggleCollapse = (): void => {
     const next = !collapsed
@@ -163,22 +175,15 @@ export default function Sidebar() {
         style={{ backgroundColor: 'var(--color-panel)', borderRight: '1px solid var(--color-border)' }}
       >
         <Link to="/" className="mb-6 rounded-md p-1 hover:bg-white/5" title="Home">
-          <div
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-sm font-bold"
-            style={{ backgroundColor: 'rgba(42,131,95,0.2)', color: 'var(--color-highlight)' }}
-          >
-            c
-          </div>
+          <Code2 size={16} strokeWidth={2.2} style={{ color: 'var(--color-highlight)' }} />
         </Link>
         <button
           onClick={toggleCollapse}
           className="rounded-md p-2 transition-colors hover:bg-white/5"
           style={{ color: 'var(--color-text-faint)' }}
-          title="Expand"
+          title="Expand sidebar"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <PanelLeftOpen size={16} />
         </button>
         <div
           className="mt-auto rotate-180 text-[10px] uppercase tracking-[0.2em] [writing-mode:vertical-rl]"
@@ -196,75 +201,71 @@ export default function Sidebar() {
       className="sticky top-0 flex h-screen w-80 shrink-0 flex-col"
       style={{ backgroundColor: 'var(--color-panel)', borderRight: '1px solid var(--color-border)' }}
     >
-      {/* Editorial header */}
-      <div className="flex items-start justify-between px-5 pt-5">
-        <div>
-          <Link
-            to="/"
-            className="text-[15px] font-semibold tracking-tight hover:opacity-90"
-            style={{ color: '#e8f4f0' }}
+      {/* Header: icon + wordmark row */}
+      <div className="flex items-center justify-between px-4 pb-3 pt-4">
+        <Link to="/" className="flex items-center gap-2 hover:opacity-90">
+          <Code2
+            size={16}
+            strokeWidth={2.2}
+            className="shrink-0 text-[var(--color-highlight)]"
+          />
+          <span
+            className="text-[15px] font-semibold leading-none tracking-tight"
+            style={{ color: '#e8eaed' }}
           >
             code<span style={{ color: 'var(--color-highlight)' }}>break</span>
-          </Link>
-          <div
-            className="mt-0.5 text-[10px] uppercase tracking-[0.1em]"
-            style={{ color: 'var(--color-text-faint)' }}
-          >
-            {statusLine}
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setSearchOpen((v) => !v)}
-            className="rounded-md p-1.5 transition-colors hover:bg-white/5"
-            style={{
-              color: searchOpen ? 'var(--color-highlight)' : 'var(--color-text-faint)',
-            }}
-            title="Search"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <circle cx="11" cy="11" r="7" />
-              <path d="M21 21l-4.35-4.35" strokeLinecap="round" />
-            </svg>
-          </button>
-          <button
-            onClick={toggleCollapse}
-            className="rounded-md p-1.5 transition-colors hover:bg-white/5"
-            style={{ color: 'var(--color-text-faint)' }}
-            title="Collapse"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        </div>
+          </span>
+        </Link>
+        <button
+          onClick={toggleCollapse}
+          className="rounded-md p-1.5 transition-colors hover:bg-white/5"
+          style={{ color: 'var(--color-text-faint)' }}
+          title="Collapse sidebar"
+        >
+          <PanelLeftClose size={15} />
+        </button>
       </div>
 
-      {/* Expandable search */}
-      {searchOpen && (
-        <div className="px-4 pt-3">
+      {/* Search */}
+      <div className="px-4 pb-3">
+        <div className="relative">
+          <Search
+            size={14}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-faint)]"
+          />
           <input
-            autoFocus
+            ref={searchRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Escape' && (setSearchOpen(false), setQuery(''))}
-            placeholder="Search title, source, slug…"
-            className="w-full rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:ring-1"
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                setQuery('')
+                searchRef.current?.blur()
+              }
+            }}
+            placeholder="Search the logbook…"
+            className="w-full rounded-lg py-2 pl-9 pr-16 text-[13px] focus:outline-none focus:ring-1"
             style={{
               backgroundColor: 'var(--color-inset)',
               border: '1px solid var(--color-border-subtle)',
               color: 'var(--color-text)',
-              // @ts-expect-error CSS custom prop
+              // @ts-expect-error -- CSS custom property
               '--tw-ring-color': 'var(--color-accent)',
             }}
           />
+          <kbd
+            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded px-1.5 py-0.5 text-[10px] font-medium"
+            style={{ backgroundColor: 'rgba(211,218,217,0.08)', color: 'var(--color-text-faint)' }}
+          >
+            {isMac ? '⌘K' : 'Ctrl K'}
+          </kbd>
         </div>
-      )}
+      </div>
 
       {/* The logbook stream */}
       <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-8 cb-scroll">
         {error && (
-          <p className="px-3 py-4 text-sm" style={{ color: '#e87878' }}>
+          <p className="px-3 py-4 text-sm" style={{ color: '#e8a0a0' }}>
             {error}
           </p>
         )}
