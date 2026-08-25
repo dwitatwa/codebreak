@@ -1,26 +1,60 @@
 @import 'tailwindcss';
 @plugin "@tailwindcss/typography";
 
+/* ── Type system: IBM Plex ────────────────────────────────────────────────── */
+@theme {
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ── codebreak palette ─────────────────────────────────────────────────── */
+  /* primary   #092328  → page background, darkest layer                     */
+  /* secondary #12544F  → panels, raised surfaces, sidebar                   */
+  /* third     #2A835F  → accents, active states, links, type indicators     */
+  /* fourth    #8BBB92  → highlights, hover text, brand accent, secondary txt */
+
+  --color-bg: #092328;
+  --color-panel: #12544f;
+  --color-accent: #2a835f;
+  --color-highlight: #8bbb92;
+
+  /* Text scale on the dark-green surfaces */
+  --color-text: #d6e4df;
+  --color-text-muted: #7ba39a;
+  --color-text-faint: #4d7268;
+
+  /* Borders derived from the panel color */
+  --color-border: #1a6963;
+  --color-border-subtle: #16524e;
+
+  /* Recessed inputs */
+  --color-inset: #0a2e2b;
+}
+
 /* ── Base ─────────────────────────────────────────────────────────────────── */
 html {
   color-scheme: dark;
   scroll-behavior: smooth;
 }
 body {
-  background-color: #0c0d12;
+  background-color: var(--color-bg);
+  font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.003em;
+  color: var(--color-text);
 }
 
-/* Thin dark scrollbars for panels and the page */
+/* Thin scrollbars matching the palette */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #3f3f46 transparent;
+  scrollbar-color: var(--color-border) transparent;
 }
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: var(--color-border);
   border-radius: 4px;
 }
 *::-webkit-scrollbar-track {
@@ -31,8 +65,8 @@ body {
 .prose details {
   margin-block: 0.75rem;
   border-radius: 0.5rem;
-  border: 1px solid #27272a;
-  background-color: #18181b;
+  border: 1px solid var(--color-border);
+  background-color: color-mix(in srgb, var(--color-panel) 40%, var(--color-bg));
 }
 .prose details > summary {
   cursor: pointer;
@@ -40,7 +74,7 @@ body {
   padding: 0.6rem 1rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #e4e4e7;
+  color: var(--color-text);
   list-style: none;
 }
 .prose details > summary::-webkit-details-marker {
@@ -50,14 +84,14 @@ body {
   content: '▸';
   display: inline-block;
   margin-right: 0.5rem;
-  color: #34d399;
+  color: var(--color-highlight);
   transition: transform 0.15s ease;
 }
 .prose details[open] > summary::before {
   transform: rotate(90deg);
 }
 .prose details > summary:hover {
-  color: #34d399;
+  color: var(--color-highlight);
 }
 .prose details[open] > *:not(summary) {
   animation: cb-fade-in 0.18s ease-out;
@@ -79,12 +113,27 @@ body {
 
 /* Raw-text fallback shown when MDX compilation fails */
 .cb-raw {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* Shiki blocks already carry inline github-dark colors; keep edges tidy */
+/* Shiki blocks already carry inline github-dark colors; keep edges tidy.
+   We tint the border with our palette so it doesn't clash. */
 .prose pre {
   overflow-x: auto;
   border-radius: 0.5rem;
-  border: 1px solid #27272a;
+  border: 1px solid var(--color-border-subtle);
+}
+
+/* ── Prose color overrides for the green palette ──────────────────────────── */
+.prose-invert {
+  --tw-prose-body: var(--color-text);
+  --tw-prose-headings: #e8f4f0;
+  --tw-prose-links: var(--color-highlight);
+  --tw-prose-bold: #e8f4f0;
+  --tw-prose-code: var(--color-highlight);
+  --tw-prose-quotes: var(--color-text-muted);
+  --tw-prose-bullets: var(--color-accent);
+  --tw-prose-hr: var(--color-border-subtle);
+  --tw-prose-th-borders: var(--color-border);
+  --tw-prose-td-borders: var(--color-border-subtle);
 }
