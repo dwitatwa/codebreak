@@ -12,9 +12,10 @@ export interface FetchedDoc {
   ok: boolean
   html: string
   error?: string
+  files?: string[]
 }
 
-/** Ambil dokumen yang sudah dikompilasi server menjadi HTML */
+/** Fetch the document compiled to HTML by the server */
 export async function fetchDocHtml(slug: string): Promise<FetchedDoc> {
   const res = await fetch(`/api/doc/${encodeURIComponent(slug)}`)
   if (!res.ok) {

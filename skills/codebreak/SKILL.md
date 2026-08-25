@@ -55,28 +55,37 @@ Override per column without editing the file: `--title`, `--type`, `--source`, `
   the `--title` flag) — this determines the file name and how it appears in the viewer.
 - Start with `## Summary` — a TL;DR of at most 6 bullets.
 - One `### path/to/file.ext` section per file being discussed.
-- Wrap each explained unit in a native HTML collapsible:
+- Wrap each explained unit in the viewer components — code FIRST, line-keyed notes below:
   ```markdown
-  <details open>
-  <summary>Block: functionName · lines 12-40</summary>
+  <Block name="functionName" lines="12-40">
+    <CodeBlock lang="ts">
 
-  Explanation of the block...
+      ```ts
+      (the EXACT code excerpt, copied verbatim, < ~30 lines)
+      ```
 
-  ```ts
-  short code excerpt (< ~30 lines), quoted exactly from the source
+    </CodeBlock>
+    <LineNotes>
+      <Note line="12">one short fact: what this line does.</Note>
+      <Note line="14">why it is implemented this way.</Note>
+      <Note line="15">a consequence/edge case the developer should think about —
+        MUST include at least one such implication somewhere in the notes.</Note>
+    </LineNotes>
+  </Block>
   ```
-
-  </details>
-  ```
+- The code inside `<CodeBlock>` MUST be written as a fenced code block (```lang … ```)
+  so MDX does not mis-parse it.
+- Annotate only the **load-bearing lines** (control flow, side effects, edge cases,
+  subtle logic). Skip boilerplate. One short note per line — no long paragraphs.
 - Depth follows the request: `overview` = architecture only, no function detail;
   `block` = per function/class/block with line ranges; `line` = block level plus
   `L<n>` references for subtle or risky lines.
 - **MDX-SAFETY RULES** (violations break rendering):
-  - Never write a bare `<` character outside code fences — say "less than" or wrap
+  - Never write a bare `<` character outside the component tags — say "less than" or wrap
     expressions in backticks.
   - Never start a line with `{` outside code fences.
-  - No `import`/`export`, no JSX components; only plain HTML elements such as
-    `<details>`, `<summary>`, `<b>`, `<em>`, `<code>`.
+  - Do NOT write `<details>`, `<summary>`, `<b>` — the viewer components `<Block>`,
+    `<CodeBlock>`, `<LineNotes>`, `<Note>` are the ONLY allowed structural elements.
 
 ## Other command reference
 

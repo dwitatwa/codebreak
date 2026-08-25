@@ -28,6 +28,26 @@ describe('buildSystemPrompt', () => {
     expect(sys).toContain('Never write a bare "<"')
   })
 
+  it('memuat struktur komponen viewer (Block/CodeBlock/LineNotes/Note)', () => {
+    const sys = buildSystemPrompt('block', 'en')
+    expect(sys).toContain('<Block name=')
+    expect(sys).toContain('<CodeBlock lang=')
+    expect(sys).toContain('<LineNotes>')
+    expect(sys).toContain('<Note line=')
+  })
+
+  it('mengharuskan code first + implikasi pada notes', () => {
+    const sys = buildSystemPrompt('block', 'en')
+    expect(sys).toContain('Code must come FIRST')
+    expect(sys).toContain('MUST include at least one such implication')
+  })
+
+  it('melarang elemen HTML lama (details/b)', () => {
+    const sys = buildSystemPrompt('block', 'en')
+    expect(sys).toContain('Do NOT write <details>, <summary>, <b>')
+    expect(sys).not.toContain('No import/export statements, no JSX components')
+  })
+
   it('tldrHeading en → Summary', () => {
     expect(tldrHeading('en')).toBe('Summary')
   })

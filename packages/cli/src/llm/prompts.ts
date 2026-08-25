@@ -10,9 +10,14 @@ export function localeName(code: string): string {
   return LOCALE_NAMES[code] ?? 'Bahasa Indonesia'
 }
 
-/** Judul seksi TL;DR sesuai locale (fallback Inggris) */
+/** Section heading for the TL;DR, localized */
 export function tldrHeading(locale: string): string {
   return locale === 'id' ? 'Ringkasan' : 'Summary'
+}
+
+/** Summary label for collapsible blocks, localized (e.g. "Block: fn · lines 12-40") */
+export function blockLabel(locale: string): string {
+  return locale === 'id' ? 'Blok: {name} · baris {range}' : 'Block: {name} · lines {range}'
 }
 
 function depthInstruction(depth: Depth): string {
@@ -40,21 +45,26 @@ function depthInstruction(depth: Depth): string {
   }
 }
 
-/** Summary label for collapsible blocks, localized (e.g. "Block: fn · lines 12-40") */
-export function blockLabel(locale: string): string {
-  return locale === 'id' ? 'Blok: {name} · baris {range}' : 'Block: {name} · lines {range}'
-}
-
 /**
- * Kontrak output ketat supaya hasil selalu dokumen MDX yang valid:
- * markdown murni + elemen HTML native (<details>/<summary>) saja.
+ * Strict output contract so the result is always a valid MDX document:
+ * plain markdown + native HTML elements (<details>/<summary>) only.
+ *
+ * Every explained block follows the WHAT / WHY / DETAILS structure:
+ *   WHAT    — what the code does (facts, no judgement)
+ *   WHY     — why it is implemented this way (intent, design reasoning)
+ *   DETAILS — consequences, edge cases, assumptions, implications (the gold).
+ *
+ * DETAILS must contain at least one implication line, because that is the
+ * anti-"this code looks fine" mechanism — it forces the model to surface
+ * what the developer should actually think about.
  */
 export function buildSystemPrompt(depth: Depth, locale: string): string {
   const lang = localeName(locale)
   const summary = tldrHeading(locale)
-  const block = blockLabel(locale)
   return [
     'You are a senior software engineer writing an explanatory document about code for another developer.',
+    'The developer will review or maintain this code, so your job is to make them UNDERSTAND it —',
+    'not to tell them it is good.',
     '',
     depthInstruction(depth),
     '',
@@ -65,20 +75,34 @@ export function buildSystemPrompt(depth: Depth, locale: string): string {
     `1. Reply with ONLY the document body. No YAML frontmatter, no top-level "# " title, no preamble.`,
     `2. Start with "## ${summary}" containing a TL;DR of at most 6 bullet points.`,
     '3. After that, create one "### path/to/file.ext" section per file discussed.',
-    '4. Inside a file section, wrap each explained unit in a native HTML collapsible:',
-    '   <details open>',
-    `   <summary>${block.replace('{name}', 'functionName').replace('{range}', '12-40')}</summary>`,
-    '   explanation paragraphs...',
-    '   ```lang',
-    '   short exact code excerpt',
-    '   ```',
-    '   </details>',
-    '5. Code excerpts must be fenced with the correct language tag and stay under ~30 lines.',
-    '6. MDX SAFETY RULES (violations break rendering):',
-    '   - Never write a bare "<" character outside code fences; say "less than" or wrap expressions in backticks.',
+    '4. Inside a file section, wrap each explained unit in the viewer components:',
+    '   <Block name="functionName" lines="12-40">',
+    '     <CodeBlock lang="ts">',
+    '',
+    '       ```ts',
+    '       (the EXACT code excerpt, copied verbatim, < ~30 lines)',
+    '       ```',
+    '',
+    '     </CodeBlock>',
+    '     <LineNotes>',
+    '       <Note line="12">one short fact about this line: what it does.</Note>',
+    '       <Note line="14">why it is implemented this way.</Note>',
+    '       <Note line="15">a consequence/edge case the developer should think about —',
+    '         MUST include at least one such implication somewhere in the notes.',
+    '         e.g. "the number of concurrent requests is proportional to the number of users".</Note>',
+    '     </LineNotes>',
+    '   </Block>',
+    '5. Code must come FIRST, inside <CodeBlock>, written as a FENCED code block',
+    '   (```lang ... ```) — this is required so MDX does not mis-parse the code.',
+    '   The notes below it annotate specific lines by number.',
+    '6. Annotate only the LOAD-BEARING lines (control flow, side effects, edge cases,',
+    '   subtle logic). Skip boilerplate. Do NOT write long paragraphs — one short note per line.',
+    '7. MDX SAFETY RULES (violations break rendering):',
+    '   - Never write a bare "<" character outside the component tags; say "less than" or wrap expressions in backticks.',
     '   - Never begin a line with "{" outside code fences.',
-    '   - No import/export statements, no JSX components. Only plain HTML elements such as <details>, <summary>, <b>, <em>, <code> are allowed.',
-    '7. Optionally end with one extra "## ..." section highlighting risks, gotchas, or follow-up suggestions.',
+    '   - Do NOT write <details>, <summary>, <b> — the viewer components <Block>, <CodeBlock>,',
+    '     <LineNotes>, <Note> are the ONLY allowed structural elements.',
+    '8. Optionally end with one extra "## ..." section highlighting risks, gotchas, or follow-up suggestions.',
   ].join('\n')
 }
 

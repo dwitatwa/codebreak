@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowUp } from 'lucide-react'
 import { fetchDocHtml, fetchDocs, type DocMeta } from '../api'
 import { TypeBadge } from '../components/Sidebar'
+import FileSource from '../components/FileSource'
 
 interface TocItem {
   id: string
@@ -28,6 +29,7 @@ export default function DocPage() {
   const [compileError, setCompileError] = useState<string | null>(null)
   const [rawContent, setRawContent] = useState<string>('')
   const [meta, setMeta] = useState<DocMeta | null>(null)
+  const [files, setFiles] = useState<string[]>([])
   const [toc, setToc] = useState<TocItem[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [showTop, setShowTop] = useState(false)
@@ -53,6 +55,7 @@ export default function DocPage() {
         void loadRaw(slug).then((raw) => alive && setRawContent(raw))
       } else {
         setHtml(doc.html)
+        setFiles(doc.files ?? [])
       }
     })
 
@@ -99,6 +102,46 @@ export default function DocPage() {
     return () => {
       window.removeEventListener('scroll', onScroll)
       cancelAnimationFrame(raf)
+    }
+  }, [html])
+
+  // Line ↔ note hover linking: hovering a code line highlights its note(s)
+  // and vice-versa (matched by data-line).
+  useEffect(() => {
+    if (html === null) return
+    const root = articleRef.current
+    if (!root) return
+
+    const clear = (): void => {
+      root.querySelectorAll('.cb-code-line.cb-hl, .cb-note.cb-hl').forEach((el) =>
+        el.classList.remove('cb-hl'),
+      )
+    }
+    const highlight = (line: string | null): void => {
+      clear()
+      if (!line) return
+      root.querySelectorAll(`.cb-code-line[data-line="${line}"], .cb-note[data-line="${line}"]`).forEach(
+        (el) => el.classList.add('cb-hl'),
+      )
+    }
+
+    const onLineOver = (e: Event): void => {
+      const el = (e.target as HTMLElement).closest('.cb-code-line') as HTMLElement | null
+      highlight(el?.dataset.line ?? null)
+    }
+    const onNoteOver = (e: Event): void => {
+      const el = (e.target as HTMLElement).closest('.cb-note') as HTMLElement | null
+      highlight(el?.dataset.line ?? null)
+    }
+    const onOut = (): void => clear()
+
+    root.addEventListener('mouseover', onLineOver)
+    root.addEventListener('mouseover', onNoteOver)
+    root.addEventListener('mouseleave', onOut)
+    return () => {
+      root.removeEventListener('mouseover', onLineOver)
+      root.removeEventListener('mouseover', onNoteOver)
+      root.removeEventListener('mouseleave', onOut)
     }
   }, [html])
 
@@ -169,11 +212,27 @@ export default function DocPage() {
         )}
 
         {html !== null && (
-          <div
-            id="doc-body"
-            className="prose prose-invert max-w-none prose-headings:scroll-mt-28"
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
+          <>
+            <div
+              id="doc-body"
+              className="prose prose-invert max-w-none prose-headings:scroll-mt-28"
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+
+            {/* Full source of each referenced file */}
+            {files.length > 0 && (
+              <div className="mt-8 border-t pt-5" style={{ borderColor: 'var(--color-border-subtle)' }}>
+                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-faint)' }}>
+                  Source files
+                </div>
+                <div className="space-y-2">
+                  {files.map((f) => (
+                    <FileSource key={f} path={f} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </article>
 

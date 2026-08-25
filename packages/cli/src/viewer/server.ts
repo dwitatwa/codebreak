@@ -15,6 +15,18 @@ const MIME: Record<string, string> = {
   '.json': 'application/json',
 }
 
+/** Resolve repo root from the docs dir (.codebreak/docs → repo root) */
+function repoRootFromDocsDir(docsDir: string): string {
+  return path.dirname(path.dirname(docsDir))
+}
+
+/** Protect against path traversal: the resolved path must stay inside the repo */
+function safeRepoPath(root: string, rel: string): string | null {
+  const resolved = path.resolve(root, rel)
+  if (!resolved.startsWith(root + path.sep) && resolved !== root) return null
+  return resolved
+}
+
 /**
  * Dev mode: manifest belum digenerate → layani shell dari dist-static/ di disk.
  * Dicari dengan menelusuri ke atas dari lokasi modul (tahan perubahan layout bundel).
@@ -133,6 +145,23 @@ export function startViewerServer(opts: ViewerServerOptions): ViewerServer {
         return json(listDocs(docsDir))
       }
 
+      // /api/file?path=src/auth/login.ts → the file's current source (line-numbered
+      // rendering happens client-side; we serve the raw text safely).
+      if (url.pathname === '/api/file') {
+        const rel = url.searchParams.get('path')
+        if (!rel) return json({ error: 'missing path' }, 400)
+        const root = repoRootFromDocsDir(docsDir)
+        const abs = safeRepoPath(root, rel)
+        if (!abs) return json({ error: 'invalid path' }, 400)
+        let content: string
+        try {
+          content = fs.readFileSync(abs, 'utf8')
+        } catch {
+          return json({ error: 'file not found' }, 404)
+        }
+        return json({ path: rel, content })
+      }
+
       const docMatch = /^\/api\/doc\/(.+)$/.exec(url.pathname)
       if (docMatch?.[1]) {
         const slug = decodeURIComponent(docMatch[1])
@@ -141,7 +170,9 @@ export function startViewerServer(opts: ViewerServerOptions): ViewerServer {
 
         const { frontmatter, body } = splitFrontmatter(raw)
         const rendered = await renderDoc(body)
-        return json({ ...rendered, frontmatter })
+        // Extract file paths referenced by the document (### path/to/file.ext headings)
+        const files = extractDocFiles(body)
+        return json({ ...rendered, frontmatter, files })
       }
 
       // Static shell — disk first (freshest during development), then the
@@ -179,4 +210,30 @@ export function startViewerServer(opts: ViewerServerOptions): ViewerServer {
       server.stop(true)
     },
   }
+}
+
+/**
+ * Extract file paths referenced by a document body.
+ * The document contract uses "### path/to/file.ext" headings per file discussed.
+ * We skip headings that are clearly not file paths (e.g. "## Summary").
+ */
+export function extractDocFiles(body: string): string[] {
+  const out: string[] = []
+  const seen = new Set<string>()
+  const re = /^###\s+(.+?)\s*$/gm
+  let m: RegExpExecArray | null
+  while ((m = re.exec(body)) !== null) {
+    const raw = m[1]?.trim()
+    if (!raw) continue
+    // A plausible file path: has an extension, no spaces, not a section label
+    if (!/\.\w{1,6}$/.test(raw)) continue
+    if (/\s/.test(raw)) continue
+    if (raw.startsWith('/') || raw.startsWith('\\')) continue
+    const clean = raw.replace(/^\.\//, '')
+    if (!seen.has(clean)) {
+      seen.add(clean)
+      out.push(clean)
+    }
+  }
+  return out
 }

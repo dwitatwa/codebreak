@@ -7,22 +7,23 @@ import { explain } from '../src/core/explain.js'
 import type { CompletionRequest, LlmProvider } from '../src/llm/types.js'
 
 const CANNED_DOC = [
-  '## Ringkasan',
+  '## Summary',
   '',
-  '- Login memvalidasi kredensial pengguna',
+  '- Login validates credentials',
   '',
-  '### File: src/auth/login.ts',
+  '### src/auth/login.ts',
   '',
-  '<details open>',
-  '<summary>Blok: login() · baris 1-3</summary>',
-  'Fungsi `login` mengembalikan token palsu.',
-  '',
-  '```ts',
-  'export function login(u: string) {',
-  '  return u === "admin" ? "ok" : "deny"',
-  '}',
-  '```',
-  '</details>',
+  '<Block name="login" lines="1-3">',
+  '  <CodeBlock lang="ts">',
+  '    export function login(u: string) {',
+  '      return u === "admin" ? "ok" : "deny"',
+  '    }',
+  '  </CodeBlock>',
+  '  <LineNotes>',
+  '    <Note line="1">Defines the login function.</Note>',
+  '    <Note line="2">Only "admin" succeeds — the check is hardcoded.</Note>',
+  '  </LineNotes>',
+  '</Block>',
 ].join('\n')
 
 class ScriptedProvider implements LlmProvider {
@@ -84,8 +85,8 @@ describe('explain end-to-end (provider tiruan)', () => {
     expect(fs.existsSync(result.docAbsPath)).toBe(true)
     const doc = fs.readFileSync(result.docAbsPath, 'utf8')
     expect(doc).toContain('type: description')
-    expect(doc).toContain('<summary>Blok: login()')
-    expect(result.tldr).toContain('Login memvalidasi')
+    expect(doc).toContain('<Block name="login"')
+    expect(result.tldr).toContain('Login validates')
     expect(result.tldrHeadingText).toBe('Summary')
   })
 
