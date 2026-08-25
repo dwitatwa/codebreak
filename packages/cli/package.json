@@ -1,0 +1,31 @@
+{
+  "name": "@codebreak/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "LLM-powered code explainer CLI — changes, commits, files, feature descriptions → interactive MDX docs",
+  "bin": {
+    "codebreak": "./dist/cli.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@codebreak/viewer": "workspace:*",
+    "commander": "^12.1.0",
+    "ignore": "^5.3.2",
+    "openai": "^4.77.0",
+    "ora": "^8.1.1",
+    "picocolors": "^1.1.1",
+    "simple-git": "^3.27.0",
+    "yaml": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,0 +1,41 @@
+@import 'tailwindcss';
+@plugin "@tailwindcss/typography";
+
+/* Collapsible <details> dari dokumen MDX */
+.prose details {
+  @apply my-3 rounded-lg border border-neutral-200 bg-white;
+}
+.prose details > summary {
+  @apply cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-neutral-800;
+  list-style: none;
+}
+.prose details > summary::-webkit-details-marker {
+  display: none;
+}
+.prose details > summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 0.5rem;
+  color: #059669;
+  transition: transform 0.15s ease;
+}
+.prose details[open] > summary::before {
+  transform: rotate(90deg);
+}
+.prose details > summary:hover {
+  @apply text-emerald-700;
+}
+.prose details > *:not(summary) {
+  @apply mx-4 mb-4 mt-2;
+}
+
+/* Fallback konten mentah saat MDX gagal dikompilasi */
+.cb-raw {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Shiki github-dark di dalam prose terang: pastikan pre punya radius & overflow rapi */
+.prose pre {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+}

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.log
+.codebreak/docs/
+.DS_Store
+
+# Generated skill artifact in this repo — canonical source: skills/codebreak/SKILL.md
+.agents/

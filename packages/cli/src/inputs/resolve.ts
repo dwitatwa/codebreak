@@ -1,0 +1,62 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { CodebreakError } from '../errors.js'
+import type { InputRequest } from './context.js'
+
+export interface ExplainCliArgs {
+  positional?: string
+  changes?: boolean
+  commit?: string
+}
+
+/**
+ * Prioritas: --changes > --commit > posisional.
+ * Posisional jadi mode File kalau path-nya ada di disk, sisanya Description.
+ * Kalau tidak ada input sama sekali, caller bisa fallback ke stdin (pipe).
+ */
+export function resolveInput(args: ExplainCliArgs): InputRequest {
+  if (args.changes && args.commit) {
+    throw new CodebreakError('Gunakan salah satu saja: --changes atau --commit <ref>')
+  }
+  if (args.changes) return { kind: 'changes' }
+  if (args.commit) return { kind: 'commit', ref: args.commit }
+
+  const target = args.positional?.trim()
+  if (!target) {
+    throw new CodebreakError(
+      'Tentukan input: --changes, --commit <ref>, <path file/folder>, atau "<deskripsi fitur>".',
+    )
+  }
+
+  try {
+    const stat = fs.statSync(target)
+    if (!stat.isFile() && !stat.isDirectory()) {
+      throw new CodebreakError(`Bukan file ataupun direktori: ${target}`)
+    }
+    return { kind: 'file', target: path.resolve(target) }
+  } catch (err) {
+    if (err instanceof CodebreakError) throw err
+    // Path tidak ada di disk → anggap deskripsi fitur bahasa natural.
+    return { kind: 'description', text: target }
+  }
+}
+
+/** true jika stdout/stdin dipipakan (bukan TTY) */
+export function stdinIsPiped(): boolean {
+  return !process.stdin.isTTY
+}
+
+/** Baca seluruh stdin; '' jika langsung EOF */
+export function readStdin(): Promise<string> {
+  return new Promise((resolve) => {
+    let data = ''
+    process.stdin.setEncoding('utf8')
+    process.stdin.on('data', (chunk) => {
+      data += chunk
+    })
+    process.stdin.on('end', () => resolve(data.trim()))
+    // Jangan menggantung selamanya kalau tidak ada data
+    process.stdin.on('error', () => resolve(''))
+    setTimeout(() => resolve(data.trim()), 2_000).unref()
+  })
+}
