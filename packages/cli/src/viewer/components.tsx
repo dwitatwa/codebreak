@@ -42,6 +42,8 @@ export function parseLineRange(range?: string): [number, number] | null {
 interface BlockProps {
   name: string
   lines?: string
+  /** One-line description of what the block does (shown under the header) */
+  summary?: string
   children?: ReactNode
   /** Progressive disclosure: only the first block in a doc stays open */
   open?: boolean
@@ -83,7 +85,7 @@ function splitNotes(children: ReactNode): { notes: Map<string, string>; rest: Re
   return { notes, rest }
 }
 
-export function Block({ name, lines, children, open }: BlockProps) {
+export function Block({ name, lines, summary, children, open }: BlockProps) {
   const range = parseLineRange(lines)
   const start = range?.[0]
 
@@ -94,11 +96,12 @@ export function Block({ name, lines, children, open }: BlockProps) {
     .map((c) => (isValidElement(c) ? cloneCodeBlockWithNotes(c, start, notes) : c))
 
   return (
-    <details className="cb-block" open={open}>
+    <details className="cb-block" open={open} data-line-start={start ?? undefined}>
       <summary className="cb-block-summary">
         <span className="cb-block-name">{name}</span>
         {lines && <span className="cb-block-lines">{lines}</span>}
       </summary>
+      {summary && <div className="cb-block-desc">{summary}</div>}
       <div className="cb-block-body">{body}</div>
     </details>
   )

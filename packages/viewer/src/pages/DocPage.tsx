@@ -118,7 +118,7 @@ export default function DocPage() {
     const show = (el: HTMLElement): void => {
       const note = el.dataset.note
       if (!note) return
-      tooltip.innerHTML = `<span class="cb-tooltip-line">L${el.dataset.line}</span>${note.replace(/</g, '&lt;')}`
+      tooltip.innerHTML = note.replace(/</g, '&lt;')
       tooltip.classList.add('cb-tooltip--visible')
       const rect = el.getBoundingClientRect()
       const tt = tooltip.getBoundingClientRect()
@@ -147,6 +147,40 @@ export default function DocPage() {
       root.removeEventListener('mouseover', onOver)
       root.removeEventListener('mouseleave', onOut)
       tooltip.remove()
+    }
+  }, [html])
+
+  // Sort blocks within each file section by their line range (ascending),
+  // so the document reads top-to-bottom like the file itself.
+  useEffect(() => {
+    if (html === null) return
+    const root = articleRef.current
+    if (!root) return
+
+    const byStart = (a: Element, b: Element): number =>
+      Number(a.getAttribute('data-line-start') ?? Infinity) -
+      Number(b.getAttribute('data-line-start') ?? Infinity)
+
+    // Group sibling blocks that belong to the same file section: the <h3>
+    // heading acts as the section boundary.
+    let section: { h3: Element; blocks: Element[] } | null = null
+    const sections: { h3: Element; blocks: Element[] }[] = []
+    for (const el of Array.from(root.querySelectorAll('h3[id], .cb-block'))) {
+      if (el.tagName === 'H3') {
+        section = { h3: el, blocks: [] }
+        sections.push(section)
+      } else if (section && el.classList.contains('cb-block')) {
+        section.blocks.push(el)
+      }
+    }
+    for (const s of sections) {
+      if (s.blocks.length < 2) continue
+      const sorted = [...s.blocks].sort(byStart)
+      const same = sorted.every((b, i) => b === s.blocks[i])
+      if (same) continue
+      s.blocks.forEach((b) => b.remove())
+      // re-insert after the h3 heading, in sorted order
+      for (const b of sorted) s.h3.after(b)
     }
   }, [html])
 

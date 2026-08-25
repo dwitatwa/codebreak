@@ -67,6 +67,26 @@ describe('renderDoc — viewer components', () => {
     expect(html).toMatch(/cb-code-num">28</)
   })
 
+  it('renders the block summary line and data-line-start', async () => {
+    const md = [
+      '<Block name="fn" lines="28-30" summary="Does the thing.">',
+      '  <CodeBlock lang="ts">',
+      '',
+      '    ```ts',
+      '    aaa',
+      '    bbb',
+      '    ```',
+      '',
+      '  </CodeBlock>',
+      '</Block>',
+    ].join('\n')
+    const res = await renderDoc(md)
+    expect(res.ok).toBe(true)
+    expect(res.html).toContain('cb-block-desc')
+    expect(res.html).toContain('Does the thing.')
+    expect(res.html).toContain('data-line-start="28"')
+  })
+
   it('renders a plain markdown doc (legacy) without error', async () => {
     const res = await renderDoc('## Summary\n\n- point\n\n### file.ts\n\nSome prose here.')
     expect(res.ok).toBe(true)

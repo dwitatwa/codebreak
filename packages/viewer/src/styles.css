@@ -341,3 +341,12 @@ body {
   font-size: 0.625rem;
   color: var(--color-accent-text);
 }
+
+/* Block description line (the summary prop) */
+.prose .cb-block-desc {
+  padding: 0 1rem 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: 0.5rem;
+}

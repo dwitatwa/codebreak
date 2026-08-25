@@ -57,7 +57,7 @@ Override per column without editing the file: `--title`, `--type`, `--source`, `
 - One `### path/to/file.ext` section per file being discussed.
 - Wrap each explained unit in the viewer components — code FIRST, line-keyed notes below:
   ```markdown
-  <Block name="functionName" lines="12-40">
+  <Block name="functionName" lines="12-40" summary="one sentence: what this block does">
     <CodeBlock lang="ts">
 
       ```ts

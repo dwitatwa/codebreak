@@ -76,7 +76,7 @@ export function buildSystemPrompt(depth: Depth, locale: string): string {
     `2. Start with "## ${summary}" containing a TL;DR of at most 6 bullet points.`,
     '3. After that, create one "### path/to/file.ext" section per file discussed.',
     '4. Inside a file section, wrap each explained unit in the viewer components:',
-    '   <Block name="functionName" lines="12-40">',
+    '   <Block name="functionName" lines="12-40" summary="one sentence: what this block does">',
     '     <CodeBlock lang="ts">',
     '',
     '       ```ts',
