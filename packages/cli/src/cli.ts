@@ -8,13 +8,14 @@ import { runSkillInstall, runSkillShow } from './commands/skill.js'
 import { runView } from './commands/view.js'
 import { DEPTHS } from './config.js'
 import { CodebreakError } from './errors.js'
+import pkg from '../package.json'
 
 const program = new Command()
 
 program
   .name('codebreak')
   .description('Explain code with an LLM — changes, commits, files, or feature descriptions → interactive MDX docs')
-  .version('0.1.0')
+  .version(pkg.version)
 
 program
   .command('explain')
