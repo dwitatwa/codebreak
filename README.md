@@ -171,12 +171,16 @@ Check which layers are active with `codebreak doctor`.
 
 ### Releases
 
-Pushing a `v*` tag triggers CI to build binaries for linux-x64/arm64, darwin-x64/arm64,
-and windows-x64, then attach them to a GitHub Release:
+Binaries are built locally — no CI involved:
 
 ```bash
-git tag v0.2.0 && git push origin v0.2.0
+bun run build          # produces packages/cli/dist-binaries/codebreak-<os>-<arch>
 ```
+
+To publish a release, create one on GitHub and upload the binaries from
+`packages/cli/dist-binaries/` (e.g. with the GitHub web UI or `gh release create
+v0.2.0 dist-binaries/*`). The `install.sh` / `install.ps1` scripts download from the
+latest release, so publish at least one release for them to work.
 
 ## Project structure
 
