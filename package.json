@@ -12,7 +12,7 @@
     "dev": "bun run packages/cli/src/cli.ts",
     "test": "bun test --timeout 30000",
     "build": "bun run packages/cli/scripts/build.ts",
-    "build:viewer": "bun run packages/viewer/scripts/build.ts"
+    "build:viewer": "bun run packages/viewer/scripts/build.ts && bun run packages/cli/scripts/gen-manifest.ts"
   },
   "devDependencies": {
     "@types/bun": "^1.1.14",

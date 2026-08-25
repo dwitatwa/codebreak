@@ -144,20 +144,17 @@ export function startViewerServer(opts: ViewerServerOptions): ViewerServer {
         return json({ ...rendered, frontmatter })
       }
 
-      // Static shell — manifest hasil build; dev mode fallback ke dist-static di disk
+      // Static shell — disk first (freshest during development), then the
+      // embedded manifest (what compiled binaries rely on).
       const key = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname.slice(1))
-      const body = ASSETS[key]
+      const body = readAssetFromDisk(key) ?? ASSETS[key]
       if (body !== undefined) {
         const ext = key.slice(key.lastIndexOf('.'))
         return new Response(body, {
-          headers: { 'content-type': MIME[ext] ?? 'application/octet-stream' },
-        })
-      }
-      const fromDisk = readAssetFromDisk(key)
-      if (fromDisk !== null) {
-        const ext = key.slice(key.lastIndexOf('.'))
-        return new Response(fromDisk, {
-          headers: { 'content-type': MIME[ext] ?? 'application/octet-stream' },
+          headers: {
+            'content-type': MIME[ext] ?? 'application/octet-stream',
+            'cache-control': 'no-cache',
+          },
         })
       }
 
