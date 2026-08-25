@@ -76,6 +76,12 @@ Override per column without editing the file: `--title`, `--type`, `--source`, `
   ```
 - The code inside `<CodeBlock>` MUST be written as a fenced code block (```lang … ```)
   so MDX does not mis-parse it.
+- Each `<Note line="N">` appears as a **hover highlight directly on the code line** —
+  the viewer shows the note text in a tooltip when the developer hovers that line.
+  Write as much as the line needs: a short fact, a full sentence, or a few sentences
+  explaining the reasoning — whatever helps the developer understand that line.
+  (Notes are for the load-bearing lines only, so length is justified when the
+  complexity is real.)
 - The code block MUST be the complete, contiguous slice of the file covering the
   block's `lines` range — verbatim, no elision, no `…`, no diff markers, no skipping.
   If the block says `lines="28-41"`, the code must contain file lines 28–41 exactly.

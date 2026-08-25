@@ -29,9 +29,12 @@ describe('renderDoc — viewer components', () => {
     const html = res.html
     expect(html).toContain('cb-block')
     expect(html).toContain('cb-code')
-    expect(html).toContain('cb-note')
+    expect(html).toContain('cb-code-line--noted')
+    expect(html).toContain('data-note="Queries the user."')
+    expect(html).toContain('data-note="Stops on missing user."')
+    // the below-list is gone — notes live as hover data on the code lines
+    expect(html).not.toContain('cb-notes')
     expect(html).toContain('data-line="12"')
-    expect(html).toContain('data-line="13"')
     expect(html).toContain('handleLogin')
     // code line text preserved
     expect(html).toContain('await findUser(email)')

@@ -47,15 +47,51 @@ interface BlockProps {
   open?: boolean
 }
 
+/** Extract note text from a <Note> element child */
+function extractNoteText(node: ReactNode): string {
+  return extractText(node)
+}
+
+/**
+ * Pull {line → note-text} out of a <LineNotes> child, and return the
+ * remaining children (the <LineNotes> itself is consumed — its notes
+ * become hover highlights on the code lines instead of a below-list).
+ */
+function splitNotes(children: ReactNode): { notes: Map<string, string>; rest: ReactNode[] } {
+  const notes = new Map<string, string>()
+  const rest: ReactNode[] = []
+  const walk = (node: ReactNode): void => {
+    if (Array.isArray(node)) {
+      node.forEach(walk)
+      return
+    }
+    if (isValidElement(node)) {
+      const el = node as { type?: unknown; props?: { children?: ReactNode; line?: unknown } }
+      if (el.type === LineNotes) {
+        walk(el.props?.children)
+        return
+      }
+      if (el.type === Note) {
+        const line = String(el.props?.line ?? '')
+        if (line) notes.set(line, extractNoteText(el.props?.children))
+        return
+      }
+    }
+    rest.push(node)
+  }
+  walk(children)
+  return { notes, rest }
+}
+
 export function Block({ name, lines, children, open }: BlockProps) {
   const range = parseLineRange(lines)
   const start = range?.[0]
 
-  const body = Array.isArray(children)
-    ? children.map((c) => (isValidElement(c) ? cloneCodeBlockWithStart(c, start) : c))
-    : children && typeof children === 'object' && 'props' in (children as object)
-      ? cloneCodeBlockWithStart(children as ReactElement, start)
-      : children
+  // Pull notes out; the <LineNotes> is consumed into hover-highlights
+  const { notes, rest } = splitNotes(children)
+  const body = (Array.isArray(rest) ? rest : [rest])
+    .filter((c) => c !== null && c !== undefined)
+    .map((c) => (isValidElement(c) ? cloneCodeBlockWithNotes(c, start, notes) : c))
 
   return (
     <details className="cb-block" open={open}>
@@ -72,16 +108,17 @@ interface CodeBlockProps {
   lang?: string
   /** First line number shown in the gutter — the real file line */
   start?: number
+  /** line → note text, applied as hover highlights on the code lines */
+  notes?: Map<string, string>
   children?: ReactNode
 }
 
 /**
  * Renders the code as a line-numbered, data-line-annotated block.
- * The gutter uses the REAL file line numbers (derived from the block's
- * `lines` range), so notes like `<Note line="28">` match the visible
- * numbering exactly.
+ * Lines that have a note get a highlight + data-note so hovering shows the
+ * explanation right on the line (tooltip handled client-side).
  */
-export function CodeBlock({ lang, start = 1, children }: CodeBlockProps) {
+export function CodeBlock({ lang, start = 1, notes, children }: CodeBlockProps) {
   const source = extractText(children)
   const lines = source.replace(/\n$/, '').split('\n')
 
@@ -91,8 +128,14 @@ export function CodeBlock({ lang, start = 1, children }: CodeBlockProps) {
       <div className="cb-code" data-lang={lang ?? ''}>
         {lines.map((line, i) => {
           const n = start + i
+          const note = notes?.get(String(n))
           return (
-            <div className="cb-code-line" data-line={n} key={i}>
+            <div
+              className={`cb-code-line${note ? ' cb-code-line--noted' : ''}`}
+              data-line={n}
+              data-note={note ?? undefined}
+              key={i}
+            >
               <span className="cb-code-num">{n}</span>
               <span className="cb-code-text">{line === '' ? '\u00A0' : line}</span>
             </div>
@@ -104,15 +147,15 @@ export function CodeBlock({ lang, start = 1, children }: CodeBlockProps) {
 }
 
 /**
- * If a block's child is a single <CodeBlock>, forward the block's start line
- * so the gutter numbers match the file. Handles both a single child and an
- * array of children (the body may wrap the code in a <p>).
+ * If a child is a <CodeBlock>, forward the block's start line and the
+ * extracted notes map so the gutter numbers match the file and noted
+ * lines get their hover highlight.
  */
-function cloneCodeBlockWithStart(child: ReactElement, start?: number): ReactNode {
+function cloneCodeBlockWithNotes(child: ReactElement, start?: number, notes?: Map<string, string>): ReactNode {
   if (child.type === CodeBlock) {
     return createElement(
       CodeBlock,
-      { ...(child.props as object), start },
+      { ...(child.props as object), start, notes },
       (child.props as { children?: ReactNode }).children,
     )
   }

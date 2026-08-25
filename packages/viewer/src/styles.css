@@ -302,3 +302,42 @@ body {
 .prose .cb-note-text {
   flex: 1;
 }
+
+/* ── Noted lines: highlight + hover tooltip ───────────────────────────────── */
+.prose .cb-code-line--noted {
+  cursor: help;
+  position: relative;
+  background-color: rgba(196, 168, 168, 0.08);
+  box-shadow: inset 2px 0 0 var(--color-accent-text);
+}
+.prose .cb-code-line--noted:hover,
+.prose .cb-code-line--noted.cb-hl {
+  background-color: rgba(196, 168, 168, 0.18);
+}
+/* tooltip */
+.cb-tooltip {
+  position: fixed;
+  z-index: 60;
+  max-width: 320px;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-panel);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.cb-tooltip.cb-tooltip--visible {
+  opacity: 1;
+}
+.cb-tooltip .cb-tooltip-line {
+  display: inline-block;
+  margin-bottom: 0.25rem;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.625rem;
+  color: var(--color-accent-text);
+}

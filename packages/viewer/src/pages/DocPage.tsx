@@ -105,43 +105,48 @@ export default function DocPage() {
     }
   }, [html])
 
-  // Line ↔ note hover linking: hovering a code line highlights its note(s)
-  // and vice-versa (matched by data-line).
+  // Noted-line hover: show the note as a floating tooltip on the code line
   useEffect(() => {
     if (html === null) return
     const root = articleRef.current
     if (!root) return
 
-    const clear = (): void => {
-      root.querySelectorAll('.cb-code-line.cb-hl, .cb-note.cb-hl').forEach((el) =>
-        el.classList.remove('cb-hl'),
-      )
-    }
-    const highlight = (line: string | null): void => {
-      clear()
-      if (!line) return
-      root.querySelectorAll(`.cb-code-line[data-line="${line}"], .cb-note[data-line="${line}"]`).forEach(
-        (el) => el.classList.add('cb-hl'),
-      )
-    }
+    const tooltip = document.createElement('div')
+    tooltip.className = 'cb-tooltip'
+    document.body.appendChild(tooltip)
 
-    const onLineOver = (e: Event): void => {
-      const el = (e.target as HTMLElement).closest('.cb-code-line') as HTMLElement | null
-      highlight(el?.dataset.line ?? null)
+    const show = (el: HTMLElement): void => {
+      const note = el.dataset.note
+      if (!note) return
+      tooltip.innerHTML = `<span class="cb-tooltip-line">L${el.dataset.line}</span>${note.replace(/</g, '&lt;')}`
+      tooltip.classList.add('cb-tooltip--visible')
+      const rect = el.getBoundingClientRect()
+      const tt = tooltip.getBoundingClientRect()
+      let left = rect.left
+      let top = rect.bottom + 6
+      // clamp to viewport
+      if (left + tt.width > window.innerWidth - 8) left = window.innerWidth - tt.width - 8
+      if (left < 8) left = 8
+      if (top + tt.height > window.innerHeight - 8) top = rect.top - tt.height - 6
+      if (top < 8) top = 8
+      tooltip.style.left = `${left}px`
+      tooltip.style.top = `${top}px`
     }
-    const onNoteOver = (e: Event): void => {
-      const el = (e.target as HTMLElement).closest('.cb-note') as HTMLElement | null
-      highlight(el?.dataset.line ?? null)
-    }
-    const onOut = (): void => clear()
+    const hide = (): void => tooltip.classList.remove('cb-tooltip--visible')
 
-    root.addEventListener('mouseover', onLineOver)
-    root.addEventListener('mouseover', onNoteOver)
+    const onOver = (e: Event): void => {
+      const el = (e.target as HTMLElement).closest('.cb-code-line--noted') as HTMLElement | null
+      if (el) show(el)
+      else hide()
+    }
+    const onOut = (): void => hide()
+
+    root.addEventListener('mouseover', onOver)
     root.addEventListener('mouseleave', onOut)
     return () => {
-      root.removeEventListener('mouseover', onLineOver)
-      root.removeEventListener('mouseover', onNoteOver)
+      root.removeEventListener('mouseover', onOver)
       root.removeEventListener('mouseleave', onOut)
+      tooltip.remove()
     }
   }, [html])
 
