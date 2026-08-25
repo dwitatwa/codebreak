@@ -7,9 +7,9 @@ export function createProvider(): LlmProvider {
   const apiKey = resolveApiKey(cfg)
   if (!apiKey && isPublicEndpoint(cfg.provider.baseUrl)) {
     throw new CodebreakError(
-      `API key belum di-set.\n` +
-        `Set env ${cfg.provider.apiKeyEnv}, atau CODEBREAK_API_KEY,\n` +
-        `atau ubah provider.apiKeyEnv di ${describeConfigLocation()}`,
+      `API key is not set.\n` +
+        `Set the ${cfg.provider.apiKeyEnv} env var, or CODEBREAK_API_KEY,\n` +
+        `or change provider.apiKeyEnv in ${describeConfigLocation()}`,
     )
   }
   return new OpenAICompatProvider(cfg.provider, apiKey)

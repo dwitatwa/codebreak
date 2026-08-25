@@ -39,7 +39,7 @@ class ScriptedProvider implements LlmProvider {
 function makeCfg(): CodebreakConfig {
   return {
     provider: { baseUrl: 'http://127.0.0.1:9/v1', apiKeyEnv: 'CODEBREAK_NOPE', model: 'test-model' },
-    outputLocale: 'id',
+    outputLocale: 'en',
     depth: 'block',
     maxContextChars: 50_000,
     maxRelevantFiles: 5,
@@ -86,7 +86,7 @@ describe('explain end-to-end (provider tiruan)', () => {
     expect(doc).toContain('type: description')
     expect(doc).toContain('<summary>Blok: login()')
     expect(result.tldr).toContain('Login memvalidasi')
-    expect(result.tldrHeadingText).toBe('Ringkasan')
+    expect(result.tldrHeadingText).toBe('Summary')
   })
 
   it('mode file: isi file masuk material & dokumen bertipe file', async () => {
@@ -113,7 +113,7 @@ describe('explain end-to-end (provider tiruan)', () => {
         input: { kind: 'description', text: 'dokumentasi' },
         lang: ['ts'],
       }),
-    ).rejects.toThrow(/tidak ada yang cocok/)
+    ).rejects.toThrow(/none matched this repository/)
   })
 
   it('focus & context ikut ke prompt akhir', async () => {

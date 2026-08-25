@@ -42,11 +42,11 @@ describe('resolveInput', () => {
   })
 
   it('tanpa input → error dengan pesan jelas', () => {
-    expect(() => resolveInput({})).toThrow(/Tentukan input/)
+    expect(() => resolveInput({})).toThrow(/Provide an input/)
   })
 
   it('--changes + --commit bersamaan → error', () => {
-    expect(() => resolveInput({ changes: true, commit: 'HEAD' })).toThrow(/salah satu saja/)
+    expect(() => resolveInput({ changes: true, commit: 'HEAD' })).toThrow(/only one of/)
   })
 
   it('deskripsi berawalan seperti path tetap jadi description', () => {

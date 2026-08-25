@@ -13,24 +13,24 @@ const program = new Command()
 
 program
   .name('codebreak')
-  .description('Jelaskan kode dengan LLM — changes, commit, file, atau deskripsi fitur → dokumen MDX interaktif')
+  .description('Explain code with an LLM — changes, commits, files, or feature descriptions → interactive MDX docs')
   .version('0.1.0')
 
 program
   .command('explain')
   .description(
-    'Buat dokumen penjelasan. Sumber: --changes, --commit <ref>, <path>, atau "<deskripsi fitur>"',
+    'Create an explanation document. Sources: --changes, --commit <ref>, <path>, or "<feature description>"',
   )
-  .argument('[target]', 'path file/folder, atau deskripsi fitur bahasa natural')
-  .option('--changes', 'jelaskan local changes (staged + unstaged + untracked)')
-  .option('--commit <ref>', 'jelaskan commit/range, mis. HEAD, abc1234, HEAD~3..HEAD')
-  .option('--lang <langs>', 'filter file berdasarkan ekstensi, mis. ts,js')
-  .option('--focus <text>', 'instruksi penekanan khusus untuk LLM')
-  .addOption(new Option('--depth <depth>', 'tingkat detail penjelasan').choices(DEPTHS))
-  .option('--context <text>', 'konteks tambahan yang langsung di-inject ke LLM')
-  .option('--locale <code>', 'bahasa penjelasan: id | en (default dari config)')
-  .option('--max-context <chars>', 'budget karakter konteks yang dikirim ke LLM')
-  .option('--web', 'langsung jalankan & buka viewer setelah dokumen dibuat')
+  .argument('[target]', 'file/folder path, or a natural-language feature description')
+  .option('--changes', 'explain local changes (staged + unstaged + untracked)')
+  .option('--commit <ref>', 'explain a commit or range, e.g. HEAD, abc1234, HEAD~3..HEAD')
+  .option('--lang <langs>', 'filter target files by extension, e.g. ts,js')
+  .option('--focus <text>', 'special emphasis instruction for the LLM')
+  .addOption(new Option('--depth <depth>', 'explanation detail level').choices(DEPTHS))
+  .option('--context <text>', 'extra context injected directly into the LLM prompt')
+  .option('--locale <code>', 'explanation language: id | en (default from config)')
+  .option('--max-context <chars>', 'character budget for LLM context')
+  .option('--web', 'launch & open the viewer right after the document is created')
   .action(async (target: string | undefined, opts) => {
     await runExplain(target, {
       changes: opts.changes,
@@ -49,7 +49,7 @@ program
   .command('view')
   .description('Jalankan web viewer lokal untuk dokumen di repo saat ini')
   .option('--port <port>', 'port HTTP viewer', '5173')
-  .option('--no-open', 'jangan buka browser otomatis')
+  .option('--no-open', "don't open the browser automatically")
   .action(async (opts) => {
     await runView({ port: Number(opts.port), open: opts.open })
   })
@@ -57,13 +57,13 @@ program
 program
   .command('add')
   .description(
-    'Simpan dokumen markdown/MDX buatan agen eksternal ke viewer (file path atau stdin "-"). Tanpa LLM server.',
+    'Save an agent-written markdown/MDX document into the viewer (file path or stdin "-"). No LLM server needed.',
   )
-  .argument('[file]', 'path file markdown, atau "-" untuk stdin')
-  .option('--title <title>', 'judul dokumen')
-  .option('--type <type>', 'tipe: changes | commit | file | description | note')
-  .option('--source <source>', 'label sumber, mis. "commit abc123" atau pertanyaan pengguna')
-  .option('--locale <code>', 'bahasa dokumen, mis. id | en')
+  .argument('[file]', 'markdown file path, or "-" for stdin')
+  .option('--title <title>', 'document title')
+  .option('--type <type>', 'type: changes | commit | file | description | note')
+  .option('--source <source>', 'source label, e.g. "commit abc123" or the user question')
+  .option('--locale <code>', 'document language, e.g. id | en')
   .action(async (file: string | undefined, opts) => {
     await runAdd(file, {
       title: opts.title,
@@ -85,17 +85,17 @@ skill
     runSkillInstall(targets)
   })
 
-skill.command('show').description('Cetak isi SKILL.md ke stdout').action(() => {
+skill.command('show').description('Print the SKILL.md content to stdout').action(() => {
   runSkillShow()
 })
 
 program
   .command('init')
-  .description('Opt-in codebreak untuk project ini: config project + skill harness + gitignore docs')
-  .option('--force', 'timpa .codebreak/config.json yang sudah ada')
+  .description('Opt this project into codebreak: project config + harness skill + docs gitignore')
+  .option('--force', 'overwrite an existing .codebreak/config.json')
   .option('--skills <targets>', 'skill targets: project | user', 'project')
   .option('--no-skills', "don't install the harness skill")
-  .option('--no-gitignore', 'jangan sentuh .gitignore')
+  .option('--no-gitignore', "don't touch .gitignore")
   .action(async (opts) => {
     const { runInit } = await import('./commands/init.js')
     await runInit({
@@ -108,16 +108,16 @@ program
 
 program
   .command('remove')
-  .description('Copot integrasi codebreak dari project ini (kebalikan init)')
-  .option('--docs', 'ikut hapus dokumen di .codebreak/docs/')
-  .option('--all', 'hapus seluruh folder .codebreak/')
-  .option('--keep-skills', 'biarkan artefak skill harness tetap ada')
+  .description('Remove codebreak integration from this project (inverse of init)')
+  .option('--docs', 'also delete documents in .codebreak/docs/')
+  .option('--all', 'delete the entire .codebreak/ folder')
+  .option('--keep-skills', 'keep the harness skill artifacts')
   .action(async (opts) => {
     const { runRemove } = await import('./commands/remove.js')
     runRemove({ docs: opts.docs, all: opts.all, keepSkills: opts.keepSkills })
   })
 
-program.command('doctor').description('Periksa konfigurasi, koneksi LLM, git, dan viewer').action(runDoctor)
+program.command('doctor').description('Check config, LLM connectivity, git, and the viewer').action(runDoctor)
 
 async function main(): Promise<void> {
   try {

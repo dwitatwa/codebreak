@@ -26,19 +26,19 @@ export default function Home() {
     }
   }, [])
 
-  if (loading) return <div className="p-10 text-neutral-500">Memuat…</div>
+  if (loading) return <div className="p-10 text-neutral-500">Loading…</div>
   if (error) return <div className="p-10 text-red-600">{error}</div>
 
   return (
     <div className="mx-auto max-w-3xl px-8 py-10">
-      <h1 className="text-2xl font-bold tracking-tight">Dokumen codebreak</h1>
+      <h1 className="text-2xl font-bold tracking-tight">codebreak documents</h1>
       <p className="mt-1 text-sm text-neutral-500">
-        Hasil penjelasan LLM atas changes, commit, file, dan deskripsi fitur di repo ini.
+        LLM-written explanations of changes, commits, files, and feature descriptions in this repo.
       </p>
 
       {docs.length === 0 ? (
         <div className="mt-10 rounded-lg border border-dashed border-neutral-300 bg-white p-8 text-center">
-          <p className="text-neutral-600">Belum ada dokumen.</p>
+          <p className="text-neutral-600">No documents yet.</p>
           <pre className="mx-auto mt-4 max-w-md rounded bg-neutral-900 p-4 text-left text-xs leading-relaxed text-emerald-300">
 {`codebreak explain --changes
 codebreak explain --commit HEAD
@@ -46,7 +46,7 @@ codebreak explain src/auth/
 codebreak explain "user authentication flow"`}
           </pre>
           <p className="mt-3 text-xs text-neutral-400">
-            Dokumen baru otomatis muncul di sini tanpa perlu refresh.
+            New documents appear here automatically — no refresh needed.
           </p>
         </div>
       ) : (

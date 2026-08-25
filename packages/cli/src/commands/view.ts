@@ -26,16 +26,16 @@ export async function runView(opts: ViewOptions = {}): Promise<void> {
   fs.mkdirSync(docsDir, { recursive: true })
 
   console.log(pc.dim(`Docs dir : ${docsDir}`))
-  console.log(pc.dim('Tekan Ctrl+C untuk menghentikan.'))
+  console.log(pc.dim('Press Ctrl+C to stop.'))
 
   const server = startViewerServer({ docsDir, port: opts.port })
   const url = server.url
-  console.log(pc.cyan(`\nViewer siap — dokumen baru dari \`codebreak explain\`/\`add\` langsung muncul di ${url}`))
+  console.log(pc.cyan(`\nViewer ready — new docs from \`codebreak explain\`/\`add\` appear instantly at ${url}`))
 
   if (opts.open === false) {
-    console.log(pc.dim('(--no-open aktif — buka URL di atas secara manual.)'))
+    console.log(pc.dim('(—no-open set — open the URL above manually.)'))
   } else if (!openInBrowser(url)) {
-    console.log(pc.yellow(`Tidak menemukan pembuka browser — buka manual: ${url}`))
+    console.log(pc.yellow(`No browser opener found — open manually: ${url}`))
   }
 
   // Bun.serve menjaga event loop tetap hidup; promise ini hanya membuat niatnya eksplisit.

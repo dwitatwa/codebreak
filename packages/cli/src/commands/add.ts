@@ -34,7 +34,7 @@ export interface ParsedAgentDoc {
  */
 export function parseAgentDoc(raw: string, flags: AddFlags): ParsedAgentDoc {
   let body = raw.trim()
-  if (!body) throw new CodebreakError('Konten dokumen kosong.')
+  if (!body) throw new CodebreakError('Document content is empty.')
 
   let existing: Record<string, unknown> = {}
   const fmMatch = /^---\r?\n([\s\S]*?)\r?\n---\s*\n?/.exec(body)
@@ -52,7 +52,7 @@ export function parseAgentDoc(raw: string, flags: AddFlags): ParsedAgentDoc {
     flags.title ??
     (typeof existing.title === 'string' && existing.title.trim() ? existing.title.trim() : undefined) ??
     firstHeading(body) ??
-    'Catatan Agen'
+    'Agent Notes'
 
   const rawType = (flags.type ?? (typeof existing.type === 'string' ? existing.type : '') ?? '').toLowerCase()
   const type = KNOWN_TYPES.has(rawType) ? rawType : 'note'
@@ -81,21 +81,21 @@ export async function runAdd(target: string | undefined, flags: AddFlags): Promi
     try {
       raw = fs.readFileSync(abs, 'utf8')
     } catch {
-      throw new CodebreakError(`File tidak bisa dibaca: ${abs}`)
+      throw new CodebreakError(`Could not read file: ${abs}`)
     }
   }
 
   const { frontmatter, body } = parseAgentDoc(raw, flags)
   const doc = writeAgentDoc(process.cwd(), frontmatter, body)
 
-  console.log(`✔ Dokumen tersimpan: ${pc.bold(doc.relPath)}`)
-  console.log(pc.dim('Buka viewer: codebreak view'))
+  console.log(`✔ Document saved: ${pc.bold(doc.relPath)}`)
+  console.log(pc.dim('Open the viewer: codebreak view'))
 }
 
 function readPipedStdin(): Promise<string> {
   if (process.stdin.isTTY) {
     throw new CodebreakError(
-      'Tidak ada input. Berikan path file, atau pipakan konten: cat doc.md | codebreak add -',
+      'No input provided. Pass a file path, or pipe content in: cat doc.md | codebreak add -',
     )
   }
   return new Promise((resolve) => {

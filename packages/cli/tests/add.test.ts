@@ -68,7 +68,7 @@ describe('parseAgentDoc', () => {
   })
 
   it('konten kosong → error', () => {
-    expect(() => parseAgentDoc('   \n', {})).toThrow(/kosong/)
+    expect(() => parseAgentDoc('   \n', {})).toThrow(/empty/)
   })
 
   it('frontmatter rusak → dibuang tanpa crash', () => {

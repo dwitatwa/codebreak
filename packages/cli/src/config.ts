@@ -34,7 +34,7 @@ const DEFAULTS: CodebreakConfig = {
     apiKeyEnv: 'OPENAI_API_KEY',
     model: 'gpt-4o-mini',
   },
-  outputLocale: 'id',
+  outputLocale: 'en',
   depth: 'block',
   maxContextChars: 180_000,
   maxRelevantFiles: 10,
@@ -64,7 +64,7 @@ function readConfigFile(file: string): Partial<CodebreakConfig> {
     if (typeof parsed !== 'object' || parsed === null) throw new Error('bukan objek')
     return parsed
   } catch (err) {
-    throw new CodebreakError(`Config tidak valid di ${file}: ${(err as Error).message}`)
+    throw new CodebreakError(`Invalid config at ${file}: ${(err as Error).message}`)
   }
 }
 
@@ -106,7 +106,7 @@ export function loadConfig(): CodebreakConfig {
   if (depthEnv && DEPTHS.includes(depthEnv)) cfg.depth = depthEnv
 
   if (!DEPTHS.includes(cfg.depth)) {
-    throw new CodebreakError(`depth tidak valid: "${cfg.depth}" (pilihan: ${DEPTHS.join(', ')})`)
+    throw new CodebreakError(`invalid depth: "${cfg.depth}" (choices: ${DEPTHS.join(', ')})`)
   }
   return cfg
 }

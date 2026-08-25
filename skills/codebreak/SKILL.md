@@ -1,87 +1,87 @@
 ---
 name: codebreak
 description: >
-  Simpan penjelasan kode (local changes, commit, file, atau deskripsi fitur)
-  sebagai dokumen interaktif MDX ke codebreak viewer. Gunakan saat pengguna
-  meminta menjelaskan atau mendokumentasikan kode agar bisa dibuka di browser
-  lewat `codebreak view`, menambah analisis ke koleksi dokumen proyek, atau
-  setelah menyelesaikan perubahan kode yang layak didokumentasikan.
+  Save code explanations (local changes, commits, files, or feature descriptions)
+  as interactive MDX documents into the codebreak viewer. Use it when the user
+  asks you to explain or document code so it can be read in a browser via
+  `codebreak view`, to add analysis to the project's document collection, or
+  after completing a code change worth documenting.
 ---
 
-# codebreak — dokumentasi kode interaktif via agen
+# codebreak — interactive code documentation via agents
 
-Anda (agen) adalah **penulis dokumennya**. Tidak perlu LLM eksternal terkonfigurasi:
-kumpulkan konteks sendiri dengan tool yang Anda punya (baca file, jalankan git/grep),
-tulis dokumen mengikuti kontrak di bawah, lalu simpan dengan CLI `codebreak`.
-Dokumen otomatis muncul di web viewer lokal (`codebreak view`) tanpa restart.
+You (the agent) are the **author of the document**. No external LLM server needs to be
+configured: gather context yourself using your own tools (read files, run git/grep),
+write the document following the contract below, then save it with the `codebreak` CLI.
+New documents appear automatically in the local web viewer (`codebreak view`) — no restart.
 
-## Alur kerja
+## Workflow
 
-1. **Kumpulkan konteks** sesuai permintaan pengguna:
-   - Perubahan lokal: `git status --porcelain` + `git diff HEAD` (+ baca isi file untracked).
-   - Commit/range: `git show <ref>` untuk satu commit; `git log --oneline A..B` dan
-     `git diff A B` untuk range.
-   - File/folder: baca langsung.
-   - Deskripsi fitur ("bagaimana payment webhook bekerja?"): cari file relevan sendiri
-     (grep/glob nama simbol), lalu baca filenya.
-2. **Tulis dokumen** mengikuti kontrak isi & MDX-safety di bawah.
-3. **Simpan** lewat CLI:
+1. **Gather context** based on what the user asked:
+   - Local changes: `git status --porcelain` + `git diff HEAD` (+ read untracked files).
+   - Commit/range: `git show <ref>` for a single commit; `git log --oneline A..B` and
+     `git diff A B` for a range.
+   - File/folder: just read it.
+   - Feature description ("how does the payment webhook work?"): find the relevant files
+     yourself (grep/glob for symbols), then read them.
+2. **Write the document** following the content & MDX-safety contract below.
+3. **Save it** through the CLI:
    ```bash
-   codebreak add /tmp/doc.mdx                 # dari file sementara
-   cat /tmp/doc.mdx | codebreak add -         # dari stdin
+   codebreak add /tmp/doc.mdx                 # from a temp file
+   cat /tmp/doc.mdx | codebreak add -         # from stdin
    ```
-4. **Selesai**: beri tahu pengguna menjalankan `codebreak view` jika viewer belum
-   berjalan. Jangan jalankan `codebreak view` sebagai proses blocking tanpa diminta;
-   cukup sarankan. Dokumen baru selalu muncul otomatis di viewer yang sudah jalan.
+4. **Done**: tell the user to run `codebreak view` if the viewer isn't running yet.
+   Don't run `codebreak view` as a blocking process unless asked; just suggest it.
+   New documents always show up automatically in a running viewer.
 
-## Kontrak frontmatter
+## Frontmatter contract
 
-`codebreak add` menerima markdown **dengan atau tanpa frontmatter** — frontmatter yang
-ada dipertahankan dan dinormalisasi:
+`codebreak add` accepts markdown **with or without frontmatter** — existing frontmatter
+is preserved and normalized:
 
-| Kolom   | Wajib?      | Isi                                                              |
-| ------- | ----------- | ---------------------------------------------------------------- |
-| title   | disarankan  | judul dokumen; kosong → diambil dari heading pertama             |
-| type    | opsional    | `changes` \| `commit` \| `file` \| `description` \| `note` (default `note`) |
-| source  | opsional    | mis. `commit abc123`, `src/auth/`, atau pertanyaan pengguna      |
+| Column | Required?   | Content                                                        |
+| ------ | ----------- | -------------------------------------------------------------- |
+| title  | recommended | document title; if empty, taken from the first heading          |
+| type   | optional    | `changes` \| `commit` \| `file` \| `description` \| `note` (default `note`) |
+| source | optional    | e.g. `commit abc123`, `src/auth/`, or the user's question       |
 
-`date`, nama file (slug), dan penanganan tabrakan nama diisi otomatis oleh CLI.
-Override per kolom tanpa mengedit file: `--title`, `--type`, `--source`, `--locale`.
+`date`, the file name (slug), and name-collision handling are filled in by the CLI.
+Override per column without editing the file: `--title`, `--type`, `--source`, `--locale`.
 
-## Kontrak isi dokumen (MDX-safe)
+## Document content contract (MDX-safe)
 
-- Semua teks dalam **bahasa pengguna**.
-- Awali dokumen dengan baris judul `# Judul Dokumen` (atau sertakan frontmatter
-  `title:` / flag `--title`) — ini menentukan nama file dan tampilan di viewer.
-- Mulai dengan `## Ringkasan` — TL;DR maksimal 6 bullet.
-- Satu seksi `### path/ke/file.ext` per file yang dibahas.
-- Unit penjelasan dibungkus collapsible HTML native:
+- All prose in **the user's language**.
+- Start the document with a `# Document Title` line (or include frontmatter `title:` /
+  the `--title` flag) — this determines the file name and how it appears in the viewer.
+- Start with `## Summary` — a TL;DR of at most 6 bullets.
+- One `### path/to/file.ext` section per file being discussed.
+- Wrap each explained unit in a native HTML collapsible:
   ```markdown
   <details open>
-  <summary>Blok: namaFungsi · baris 12-40</summary>
+  <summary>Block: functionName · lines 12-40</summary>
 
-  Penjelasan blok...
+  Explanation of the block...
 
   ```ts
-  cuplikan kode pendek (< ~30 baris), persis dari sumber
+  short code excerpt (< ~30 lines), quoted exactly from the source
   ```
 
   </details>
   ```
-- Kedalaman sesuai permintaan: `overview` = arsitektur saja tanpa detail fungsi;
-  `block` = per fungsi/kelas/blok + rentang baris; `line` = block + referensi `L<n>`
-  untuk baris yang subtle/berisiko.
-- **Larangan MDX-safety** (melanggar = dokumen gagal render):
-  - Jangan tulis karakter `<` telanjang di luar code fence — pakai kata "kurang dari"
-    atau bungkus ekspresi dalam backticks.
-  - Jangan mulai baris dengan `{` di luar code fence.
-  - Tanpa `import`/`export`, tanpa komponen JSX; hanya elemen HTML biasa:
+- Depth follows the request: `overview` = architecture only, no function detail;
+  `block` = per function/class/block with line ranges; `line` = block level plus
+  `L<n>` references for subtle or risky lines.
+- **MDX-SAFETY RULES** (violations break rendering):
+  - Never write a bare `<` character outside code fences — say "less than" or wrap
+    expressions in backticks.
+  - Never start a line with `{` outside code fences.
+  - No `import`/`export`, no JSX components; only plain HTML elements such as
     `<details>`, `<summary>`, `<b>`, `<em>`, `<code>`.
 
-## Referensi perintah lain
+## Other command reference
 
-- `codebreak explain --changes|--commit <ref>|<path>|"<deskripsi>"` — generate dokumen
-  via LLM server (butuh provider terkonfigurasi di `~/.config/codebreak/config.json`).
-  Tidak diperlukan untuk alur skill ini.
-- `codebreak doctor` — cek kesehatan instalasi.
-- Dokumen tersimpan di `<repo>/.codebreak/docs/YYYY-MM-DD-<slug>.mdx`.
+- `codebreak explain --changes|--commit <ref>|<path>|"<description>"` — generate a
+  document via an LLM server (requires a provider configured in
+  `~/.config/codebreak/config.json`). Not needed for this skill's workflow.
+- `codebreak doctor` — health check for the installation.
+- Documents are stored at `<repo>/.codebreak/docs/YYYY-MM-DD-<slug>.mdx`.

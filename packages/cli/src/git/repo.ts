@@ -10,9 +10,9 @@ export async function getGit(cwd: string): Promise<SimpleGit> {
     if (inside !== 'true') throw new Error('not a work tree')
   } catch {
     throw new CodebreakError(
-      'Tidak berada di dalam git repository.\n' +
-        'Mode --changes dan --commit membutuhkan repo git; ' +
-        'mode file & deskripsi fitur bisa dipakai di folder mana pun.',
+      'Not inside a git repository.\n' +
+        'The --changes and --commit modes require a git repo; ' +
+        'file & feature-description modes work in any folder.',
     )
   }
   return git
@@ -125,7 +125,7 @@ async function assertRefExists(git: SimpleGit, ref: string): Promise<void> {
     // "<ref>^{}" memvalidasi ref ada DAN bisa di-peel ke objek dasarnya
     await git.revparse([`${ref}^{}`])
   } catch {
-    throw new CodebreakError(`Ref git tidak dikenal: "${ref}"`)
+    throw new CodebreakError(`Unknown git ref: "${ref}"`)
   }
 }
 

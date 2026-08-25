@@ -27,22 +27,22 @@ export function runRemove(opts: RemoveOptions): void {
 
   if (opts.all) {
     if (rmRfIfExist(cbDir)) {
-      console.log(`${pc.green('✓')} Dihapus seluruh folder ${pc.dim('.codebreak/')}`)
+      console.log(`${pc.green('✓')} Removed the entire ${pc.dim('.codebreak/')} folder`)
     } else {
-      console.log(pc.dim('.codebreak/ memang tidak ada.'))
+      console.log(pc.dim('.codebreak/ does not exist.'))
     }
     return
   }
 
-  // Config project
+  // Project config
   const configFile = path.join(cbDir, 'config.json')
   if (rmRfIfExist(configFile)) {
-    console.log(`${pc.green('✓')} Hapus ${pc.dim(path.relative(cwd, configFile) || configFile)}`)
+    console.log(`${pc.green('✓')} Removed ${pc.dim(path.relative(cwd, configFile) || configFile)}`)
   }
 
-  // Dokumen bila diminta
+  // Docs when explicitly requested
   if (opts.docs && rmRfIfExist(path.join(cbDir, 'docs'))) {
-    console.log(`${pc.green('✓')} Hapus ${pc.dim('.codebreak/docs/')}`)
+    console.log(`${pc.green('✓')} Removed ${pc.dim('.codebreak/docs/')}`)
   }
   if (opts.docs) {
     try {
@@ -63,5 +63,5 @@ export function runRemove(opts: RemoveOptions): void {
   }
 
   console.log()
-  console.log(pc.dim('Integrasi project dicopot. Binary global & config user tidak tersentuh.'))
+  console.log(pc.dim('Project integration removed. The global binary & user config were left untouched.'))
 }

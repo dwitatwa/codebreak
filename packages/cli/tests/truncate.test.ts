@@ -15,13 +15,13 @@ describe('truncateMiddle', () => {
     const r = truncateMiddle(text, 200)
     expect(r.truncated).toBe(true)
     expect(r.text.length).toBeLessThanOrEqual(220)
-    expect(r.text).toContain('terpotong')
+    expect(r.text).toContain('truncated')
   })
 
   it('maxChars sangat kecil tetap aman', () => {
     const r = truncateMiddle('hello world', 5)
     expect(r.truncated).toBe(true)
-    expect(r.text).toContain('terpotong')
+    expect(r.text).toContain('truncated')
     // isi praktis habis, yang tersisa hanya penanda
     expect(r.text.length).toBeLessThanOrEqual(40)
   })

@@ -42,7 +42,7 @@ export async function selectRelevantFiles(
 ): Promise<string[]> {
   const map = buildRepoMap(rootDir, opts.extensions)
   if (!map.trim()) {
-    throw new CodebreakError('Tidak ada file yang bisa dipetakan di direktori ini.')
+    throw new CodebreakError('No files could be mapped in this directory.')
   }
 
   const user = [
@@ -58,7 +58,7 @@ export async function selectRelevantFiles(
 
   const listed = parsed?.files
   if (!Array.isArray(listed)) {
-    throw new CodebreakError('LLM tidak mengembalikan daftar file yang valid. Coba ulangi atau gunakan path eksplisit.')
+    throw new CodebreakError('The LLM did not return a valid file list. Try again or pass explicit paths.')
   }
 
   const seen = new Set<string>()
@@ -83,7 +83,7 @@ export async function selectRelevantFiles(
 
   if (valid.length === 0) {
     throw new CodebreakError(
-      'LLM menyarankan file tetapi tidak ada yang cocok dengan isi repository. Coba pertajam deskripsinya.',
+      'The LLM suggested files but none matched this repository. Try a more specific description.',
     )
   }
   return valid

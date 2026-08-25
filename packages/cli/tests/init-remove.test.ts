@@ -37,7 +37,7 @@ describe('codebreak init', () => {
   })
 
   it('idempoten pada gitignore, tapi config butuh --force', async () => {
-    await expect(runInit({ skills: 'project' })).rejects.toThrow(/sudah ada/)
+    await expect(runInit({ skills: 'project' })).rejects.toThrow(/already exists/)
 
     const before = fs.readFileSync(gitignorePath, 'utf8')
     await runInit({ force: true, skills: 'project' })

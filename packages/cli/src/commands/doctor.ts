@@ -16,22 +16,22 @@ export async function runDoctor(): Promise<void> {
   const cwd = process.cwd()
   let hardFail = false
 
-  // 1. Config (berlapis: user ← project)
+  // 1. Config (layered: user ← project)
   let cfg
   try {
     cfg = loadConfig()
     const sources = describeConfigSources()
-    print('ok', 'Config user', `${sources.user.path}${sources.user.exists ? '' : ' (belum ada — pakai default)'}`)
+    print('ok', 'User config', `${sources.user.path}${sources.user.exists ? '' : ' (not found — using defaults)'}`)
     if (sources.project.path) {
       print(
         sources.project.exists ? 'ok' : 'warn',
-        'Config project',
-        `${sources.project.path}${sources.project.exists ? '' : ' (belum ada — jalankan codebreak init)'}`,
+        'Project config',
+        `${sources.project.path}${sources.project.exists ? '' : ' (not found — run codebreak init)'}`,
       )
     }
     console.log(
       pc.dim(
-        `    efektif → baseUrl=${cfg.provider.baseUrl}  model=${cfg.provider.model}  apiKeyEnv=${cfg.provider.apiKeyEnv}  locale=${cfg.outputLocale}  depth=${cfg.depth}`,
+        `    effective → baseUrl=${cfg.provider.baseUrl}  model=${cfg.provider.model}  apiKeyEnv=${cfg.provider.apiKeyEnv}  locale=${cfg.outputLocale}  depth=${cfg.depth}`,
       ),
     )
   } catch (err) {
@@ -42,25 +42,25 @@ export async function runDoctor(): Promise<void> {
   // 2. API key
   const apiKey = resolveApiKey(cfg)
   if (apiKey) {
-    print('ok', `API key (${cfg.provider.apiKeyEnv})`, `${apiKey.length} karakter`)
+    print('ok', `API key (${cfg.provider.apiKeyEnv})`, `${apiKey.length} characters`)
   } else {
     const local =
       /localhost|127\.0\.0\.1|::1/.test(cfg.provider.baseUrl) || cfg.provider.baseUrl.includes('[::1]')
     if (local) {
-      print('warn', 'API key tidak di-set', 'wajar untuk server lokal tanpa auth')
+      print('warn', 'API key not set', 'expected for local servers without auth')
     } else {
-      print('fail', `API key tidak di-set`, `export ${cfg.provider.apiKeyEnv}=...`)
+      print('fail', `API key not set`, `export ${cfg.provider.apiKeyEnv}=...`)
       hardFail = true
     }
   }
 
-  // 3. Konektivitas provider
+  // 3. Provider connectivity
   try {
     const provider = new OpenAICompatProvider(cfg.provider, apiKey)
-    const spinDetail = await provider.ping()
-    print('ok', `Provider ${provider.name}`, spinDetail)
-    if (spinDetail.includes('tidak ada di daftar')) {
-      print('warn', 'Model mungkin salah nama', `cek daftar model di server, sekarang: ${cfg.provider.model}`)
+    const pingDetail = await provider.ping()
+    print('ok', `Provider ${provider.name}`, pingDetail)
+    if (pingDetail.includes('not in the server')) {
+      print('warn', 'Model name may be wrong', `check the model list on the server, currently: ${cfg.provider.model}`)
     }
   } catch (err) {
     print('fail', 'Provider', (err as Error).message)
@@ -80,27 +80,27 @@ export async function runDoctor(): Promise<void> {
   let count = 0
   try {
     count = fs.readdirSync(docsDir).filter((f) => f.endsWith('.mdx')).length
-    print('ok', 'Direktori dokumen', `${docsDir} (${count} dokumen)`)
+    print('ok', 'Docs directory', `${docsDir} (${count} document(s))`)
   } catch {
-    print('warn', 'Direktori dokumen belum ada', docsDir)
+    print('warn', 'Docs directory does not exist yet', docsDir)
   }
 
-  // 6. Frontend shell (aset statis hasil build)
+  // 6. Frontend shell (static assets from build)
   try {
     const { ASSETS } = await import('../viewer/assets.generated.js')
     if (Object.keys(ASSETS).length > 0) {
-      print('ok', 'Frontend shell ter-bundle', `${Object.keys(ASSETS).length} aset`)
+      print('ok', 'Frontend shell bundled', `${Object.keys(ASSETS).length} assets`)
     } else {
-      print('warn', 'Shell frontend belum di-build', 'jalankan `bun run build:viewer`')
+      print('warn', 'Frontend shell not built yet', 'run `bun run build:viewer`')
     }
   } catch {
-    print('warn', 'Shell frontend belum di-build', 'jalankan `bun run build:viewer`')
+    print('warn', 'Frontend shell not built yet', 'run `bun run build:viewer`')
   }
 
   console.log()
   if (hardFail) {
-    console.log(pc.red('Ada masalah yang harus dibereskan sebelum `codebreak explain` bisa dipakai.'))
+    console.log(pc.red('There are issues to fix before `codebreak explain` can be used.'))
     process.exit(1)
   }
-  console.log(pc.green('Semua komponen siap dipakai.'))
+  console.log(pc.green('All components are ready.'))
 }

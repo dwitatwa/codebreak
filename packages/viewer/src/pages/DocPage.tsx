@@ -74,13 +74,13 @@ export default function DocPage() {
           </header>
         )}
 
-        {html === null && !compileError && <p className="text-neutral-500">Menyiapkan dokumen…</p>}
+        {html === null && !compileError && <p className="text-neutral-500">Preparing document…</p>}
 
         {compileError && (
           <>
             <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
-              Dokumen ini tidak bisa dikompilasi sebagai MDX (biasanya karena karakter{' '}
-              <code>&lt;</code> liar dari output LLM). Ditampilkan sebagai teks mentah.
+              This document could not be compiled as MDX (usually a stray{' '}
+              <code>&lt;</code> character in the LLM output). Showing the raw text instead.
             </div>
             <pre className="cb-raw mt-4 whitespace-pre-wrap rounded-lg bg-neutral-900 p-5 text-sm leading-relaxed text-neutral-100">
               {rawContent || compileError}
@@ -99,7 +99,7 @@ export default function DocPage() {
       {toc.length > 1 && (
         <nav className="sticky top-0 hidden h-screen w-60 shrink-0 overflow-y-auto border-l border-neutral-200 px-4 py-10 lg:block">
           <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">
-            Daftar isi
+            Table of contents
           </div>
           {toc.map((item) => (
             <a
@@ -125,6 +125,6 @@ export default function DocPage() {
 /** Konten mentah untuk fallback saat MDX gagal dikompilasi */
 async function loadRaw(slug: string): Promise<string> {
   const res = await fetch(`/api/docs?raw=${encodeURIComponent(slug)}`)
-  if (!res.ok) throw new Error('tidak bisa memuat konten mentah')
+  if (!res.ok) throw new Error('could not load raw content')
   return res.text()
 }

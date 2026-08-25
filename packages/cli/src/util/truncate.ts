@@ -12,7 +12,7 @@ export function truncateMiddle(text: string, maxChars: number): TruncatedText {
   if (maxChars <= 0 || text.length <= maxChars) {
     return { text, truncated: false, originalChars: text.length }
   }
-  const marker = `\n[... terpotong ${text.length - maxChars} karakter ...]\n`
+  const marker = `\n[... ${text.length - maxChars} characters truncated ...]\n`
   const keep = Math.max(0, maxChars - marker.length)
   const head = Math.floor(keep * 0.7)
   const tail = Math.max(0, keep - head)

@@ -61,18 +61,18 @@ export async function explain(deps: ExplainDeps, opts: ExplainOptions): Promise<
   let ctx: GatheredContext
   switch (opts.input.kind) {
     case 'changes':
-      stage('Membaca local changes…')
+      stage('Reading local changes…')
       ctx = await gatherChangesContext(deps.cwd, { extensions: exts, maxContextChars: maxChars })
       break
     case 'commit':
-      stage(`Membaca commit ${opts.input.ref}…`)
+      stage(`Reading commit ${opts.input.ref}…`)
       ctx = await gatherCommitContext(deps.cwd, opts.input.ref, {
         extensions: exts,
         maxContextChars: maxChars,
       })
       break
     case 'file':
-      stage('Membaca file…')
+      stage('Reading files…')
       ctx = gatherFilesContext(opts.input.target, { extensions: exts, maxContextChars: maxChars })
       break
     case 'description':
@@ -83,12 +83,12 @@ export async function explain(deps: ExplainDeps, opts: ExplainOptions): Promise<
   const system = buildSystemPrompt(depth, locale)
   const user = buildUserPrompt(ctx, { focus: opts.focus, extraContext: opts.extraContext })
 
-  stage(`Menganalisis dengan ${deps.provider.model}…`)
+  stage(`Analyzing with ${deps.provider.model}…`)
   const raw = await deps.provider.complete({ system, user })
   const body = sanitizeBody(raw)
 
   if (!body.trim()) {
-    throw new Error('LLM mengembalikan jawaban kosong.')
+    throw new Error('The LLM returned an empty answer.')
   }
 
   const fm: DocFrontmatter = {
@@ -121,12 +121,12 @@ async function gatherDescriptionContext(
   maxChars: number,
   stage: (msg: string) => void,
 ): Promise<GatheredContext> {
-  stage('Memetakan repository & mencari file relevan…')
+  stage('Mapping repository & finding relevant files…')
   const files = await selectRelevantFiles(rootDir, text, deps.provider, {
     extensions: exts,
     maxFiles: deps.cfg.maxRelevantFiles,
   })
-  stage(`Membaca ${files.length} file relevan…`)
+  stage(`Reading ${files.length} relevant file(s)…`)
   const { material, truncated } = gatherSelectedFiles(rootDir, files, maxChars)
 
   return {

@@ -51,14 +51,14 @@ export default function Sidebar() {
         <div className="text-lg font-bold tracking-tight">
           code<span className="text-emerald-600">break</span>
         </div>
-        <div className="text-xs text-neutral-500">dokumen penjelasan kode</div>
+        <div className="text-xs text-neutral-500">code explanation documents</div>
       </Link>
 
       <nav className="max-h-[calc(100vh-5rem)] overflow-y-auto px-3 pb-6">
         {error && <p className="px-2 py-3 text-sm text-red-600">{error}</p>}
         {!error && docs.length === 0 && (
           <p className="px-2 py-3 text-sm text-neutral-500">
-            Belum ada dokumen. Jalankan{' '}
+            No documents yet. Run{' '}
             <code className="rounded bg-neutral-100 px-1">codebreak explain --changes</code> di repo
             Anda.
           </p>

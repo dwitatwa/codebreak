@@ -31,7 +31,7 @@ describe('git layer (fixture repository)', () => {
   it('gatherChanges: tree bersih → error informatif', async () => {
     await expect(
       gatherChangesContext(repoDir, { maxContextChars: 10_000 }),
-    ).rejects.toThrow(/tidak ada perubahan/i)
+    ).rejects.toThrow(/nothing to explain/i)
   })
 
   it('gatherChanges: perubahan unstaged terdeteksi', async () => {
@@ -44,7 +44,7 @@ describe('git layer (fixture repository)', () => {
   it('gatherChanges: file untrack ikut dimasukkan sebagai konten', async () => {
     fs.writeFileSync(path.join(repoDir, 'new.ts'), 'export const fresh = true\n')
     const ctx = await gatherChangesContext(repoDir, { maxContextChars: 20_000 })
-    expect(ctx.material).toContain('File baru (untracked): new.ts')
+    expect(ctx.material).toContain('New file (untracked): new.ts')
     expect(ctx.material).toContain('export const fresh = true')
     // rapikan supaya test berikutnya deterministik
     fs.rmSync(path.join(repoDir, 'new.ts'))
@@ -64,7 +64,7 @@ describe('git layer (fixture repository)', () => {
     expect(ctx.material).toContain('second commit')
 
     await expect(gatherCommitContext(repoDir, 'no-such-ref', { maxContextChars: 100 })).rejects.toThrow(
-      /tidak dikenal/,
+      /Unknown git ref/,
     )
   })
 

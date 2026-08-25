@@ -127,7 +127,7 @@ export function startViewerServer(opts: ViewerServerOptions): ViewerServer {
         const rawSlug = url.searchParams.get('raw')
         if (rawSlug) {
           const raw = readDocFile(docsDir, decodeURIComponent(rawSlug))
-          if (raw === null) return new Response('(dokumen tidak ditemukan)', { status: 404 })
+          if (raw === null) return new Response('(document not found)', { status: 404 })
           return new Response(raw, { headers: { 'content-type': 'text/plain; charset=utf-8' } })
         }
         return json(listDocs(docsDir))
@@ -137,7 +137,7 @@ export function startViewerServer(opts: ViewerServerOptions): ViewerServer {
       if (docMatch?.[1]) {
         const slug = decodeURIComponent(docMatch[1])
         const raw = readDocFile(docsDir, slug)
-        if (raw === null) return json({ ok: false, error: 'dokumen tidak ditemukan' }, 404)
+        if (raw === null) return json({ ok: false, error: 'document not found' }, 404)
 
         const { frontmatter, body } = splitFrontmatter(raw)
         const rendered = await renderDoc(body)

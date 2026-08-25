@@ -45,7 +45,7 @@ export async function runInit(opts: InitOptions): Promise<void> {
   const configFile = path.join(configDir, 'config.json')
   if (fs.existsSync(configFile) && !opts.force) {
     throw new CodebreakError(
-      `${configFile} sudah ada.\nGunakan --force untuk menimpanya, atau edit langsung file tersebut.`,
+      `${configFile} already exists.\nUse --force to overwrite it, or edit the file directly.`,
     )
   }
   const effective = loadConfig()
@@ -56,27 +56,27 @@ export async function runInit(opts: InitOptions): Promise<void> {
   }
   fs.mkdirSync(configDir, { recursive: true })
   fs.writeFileSync(configFile, JSON.stringify(projectCfg, null, 2) + '\n', 'utf8')
-  console.log(`${pc.green('✓')} Config project — ${pc.dim(path.relative(cwd, configFile) || configFile)}`)
+  console.log(`${pc.green('✓')} Project config — ${pc.dim(path.relative(cwd, configFile) || configFile)}`)
 
-  // 2. Skill harness ke dalam project ini
+  // 2. Harness skill inside this project
   if (!opts.noSkills) {
     const targets = (opts.skills ?? DEFAULT_INIT_SKILLS).split(',').map((t) => t.trim()).filter(Boolean)
     console.log()
     runSkillInstall(targets, root)
   }
 
-  // 3. Abaikan dokumen di git (artefak lokal)
+  // 3. Ignore docs in git (local artifacts)
   if (!opts.noGitignore) {
     const gitignorePath = path.join(root, '.gitignore')
     if (ensureGitignoreEntry(gitignorePath, '.codebreak/docs/')) {
-      console.log(`${pc.green('✓')} .gitignore — tambahan ${pc.dim('.codebreak/docs/')}`)
+      console.log(`${pc.green('✓')} .gitignore — added ${pc.dim('.codebreak/docs/')}`)
     } else {
-      console.log(`${pc.green('✓')} .gitignore — ${pc.dim('.codebreak/docs/')} sudah terdaftar`)
+      console.log(`${pc.green('✓')} .gitignore — ${pc.dim('.codebreak/docs/')} already listed`)
     }
   }
 
   console.log()
-  console.log(pc.bold(`Project ini siap memakai codebreak.`))
-  console.log(pc.dim(`Edit model/provider khusus project di ${path.relative(cwd, configFile) || configFile}`))
-  console.log(pc.dim(`Lalu: codebreak explain "..." · atau minta agen menyimpan via codebreak add`))
+  console.log(pc.bold(`This project is ready to use codebreak.`))
+  console.log(pc.dim(`Edit this project's model/provider in ${path.relative(cwd, configFile) || configFile}`))
+  console.log(pc.dim(`Then: codebreak explain "..." · or ask an agent to save docs via codebreak add`))
 }

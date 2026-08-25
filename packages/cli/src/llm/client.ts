@@ -49,16 +49,16 @@ export class OpenAICompatProvider implements LlmProvider {
         if (ids.length >= 50) break
       }
       if (this.cfg.model && !ids.includes(this.cfg.model) && ids.length > 0) {
-        return `terhubung, tapi model "${this.cfg.model}" tidak ada di daftar server (${ids.length} model tersedia)`
+        return `connected, but model "${this.cfg.model}" is not in the server list (${ids.length} models available)`
       }
-      return `terhubung (${ids.length} model tersedia)`
+      return `connected (${ids.length} models available)`
     } catch {
       await this.complete({
         system: 'You are a health check endpoint. Reply with exactly: ok',
         user: 'ping',
         temperature: 0,
       })
-      return 'terhubung (endpoint /models tidak tersedia, chat OK)'
+      return 'connected (/models endpoint unavailable, chat OK)'
     }
   }
 }

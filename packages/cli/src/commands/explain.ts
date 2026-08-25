@@ -45,7 +45,7 @@ export async function runExplain(target: string | undefined, flags: ExplainFlags
   })
 
   const provider = createProvider()
-  const spin = ora({ text: 'Menyiapkan…', color: 'cyan' }).start()
+  const spin = ora({ text: 'Preparing…', color: 'cyan' }).start()
 
   try {
     const result = await explain(
@@ -60,7 +60,7 @@ export async function runExplain(target: string | undefined, flags: ExplainFlags
         maxContextChars: flags.maxContext ? Number(flags.maxContext) : undefined,
       },
     )
-    spin.succeed(`Dokumen dibuat: ${pc.bold(result.docRelPath)}`)
+    spin.succeed(`Document created: ${pc.bold(result.docRelPath)}`)
     console.log()
 
     if (result.tldr) {
@@ -72,21 +72,21 @@ export async function runExplain(target: string | undefined, flags: ExplainFlags
     if (result.selectedFiles && result.selectedFiles.length > 0) {
       console.log(
         pc.dim(
-          `File dianalisis (${result.selectedFiles.length}): ${result.selectedFiles.join(', ')}`,
+          `Files analyzed (${result.selectedFiles.length}): ${result.selectedFiles.join(', ')}`,
         ),
       )
     }
     if (result.contextTruncated) {
-      console.log(pc.yellow('⚠ Konteks terpotong karena melebihi budget — coba --lang atau perkecil cakupan.'))
+      console.log(pc.yellow('⚠ Context was truncated because it exceeded the budget — try --lang or a narrower scope.'))
     }
 
-    console.log(pc.dim(`Buka viewer: codebreak view`))
+    console.log(pc.dim(`Open the viewer: codebreak view`))
     if (flags.web) {
       const { runView } = await import('./view.js')
       await runView({ open: true })
     }
   } catch (err) {
-    spin.fail('Gagal.')
+    spin.fail('Failed.')
     throw err
   }
 }

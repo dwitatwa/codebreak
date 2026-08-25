@@ -54,7 +54,7 @@ export function fileSection(absPath: string, displayPath: string): string | null
   const raw = fs.readFileSync(absPath)
   const clipped = raw.subarray(0, MAX_BYTES_PER_FILE)
   const note =
-    raw.length > MAX_BYTES_PER_FILE ? `\n[... file terpotong pada ${MAX_BYTES_PER_FILE} byte ...]` : ''
+    raw.length > MAX_BYTES_PER_FILE ? `\n[... file truncated at ${MAX_BYTES_PER_FILE} bytes ...]` : ''
   return `### File: ${displayPath}\n\n\`\`\`${langOf(displayPath)}\n${clipped.toString('utf8')}${note}\n\`\`\``
 }
 
@@ -63,8 +63,8 @@ export async function gatherChangesContext(cwd: string, opts: GatherOptions): Pr
   const { diff, untracked } = await gatherChanges(git, { extensions: opts.extensions })
   if (!diff.trim() && untracked.length === 0) {
     throw new CodebreakError(
-      'Tidak ada perubahan yang bisa dijelaskan (working tree bersih). ' +
-        'Coba `codebreak explain --commit HEAD` atau path file.',
+      'Nothing to explain — the working tree is clean. ' +
+        'Try `codebreak explain --commit HEAD` or a file path.',
     )
   }
 
@@ -79,13 +79,13 @@ export async function gatherChangesContext(cwd: string, opts: GatherOptions): Pr
   const untrackedSections: string[] = []
   for (const u of untracked) {
     const taken = budget.take(
-      `### File baru (untracked): ${u.path}\n\n\`\`\`${langOf(u.path)}\n${u.content}${u.truncated ? '\n[... terpotong ...]' : ''}\n\`\`\``,
+      `### New file (untracked): ${u.path}\n\n\`\`\`${langOf(u.path)}\n${u.content}${u.truncated ? '\n[... truncated ...]' : ''}\n\`\`\``,
     )
     if (taken === null) break
     untrackedSections.push(taken)
   }
   if (untrackedSections.length > 0) {
-    parts.push(`## File untracked (${untrackedSections.length} file)\n\n${untrackedSections.join('\n\n')}`)
+    parts.push(`## Untracked files (${untrackedSections.length} file(s))\n\n${untrackedSections.join('\n\n')}`)
   }
 
   return {
@@ -103,7 +103,7 @@ export async function gatherCommitContext(cwd: string, refInput: string, opts: G
   const { meta, patch, commits } = await gatherCommit(git, spec)
 
   if (!patch.trim()) {
-    throw new CodebreakError(`Commit "${spec.label}" tidak memiliki diff (kosong atau merge commit tanpa perubahan).`)
+    throw new CodebreakError(`Commit "${spec.label}" has no diff (empty, or a merge commit without changes).`)
   }
 
   const budget = new CharBudget(opts.maxContextChars)
@@ -133,7 +133,7 @@ export function gatherFilesContext(targetAbs: string, opts: GatherOptions): Gath
   try {
     stat = fs.statSync(targetAbs)
   } catch {
-    throw new CodebreakError(`Path tidak ditemukan: ${targetAbs}`)
+    throw new CodebreakError(`Path not found: ${targetAbs}`)
   }
 
   const budget = new CharBudget(opts.maxContextChars)
@@ -153,7 +153,7 @@ export function gatherFilesContext(targetAbs: string, opts: GatherOptions): Gath
 
   if (sections.length === 0) {
     const hint = opts.extensions ? ` dengan filter ekstensi ${[...(opts.extensions ?? [])].join(',')}` : ''
-    throw new CodebreakError(`Tidak ada file teks yang bisa dibaca di ${targetAbs}${hint}.`)
+    throw new CodebreakError(`No readable text files found in ${targetAbs}${hint}.`)
   }
 
   const base = path.basename(targetAbs)

@@ -16,7 +16,7 @@ export interface ExplainCliArgs {
  */
 export function resolveInput(args: ExplainCliArgs): InputRequest {
   if (args.changes && args.commit) {
-    throw new CodebreakError('Gunakan salah satu saja: --changes atau --commit <ref>')
+    throw new CodebreakError('Use only one of: --changes or --commit <ref>')
   }
   if (args.changes) return { kind: 'changes' }
   if (args.commit) return { kind: 'commit', ref: args.commit }
@@ -24,14 +24,14 @@ export function resolveInput(args: ExplainCliArgs): InputRequest {
   const target = args.positional?.trim()
   if (!target) {
     throw new CodebreakError(
-      'Tentukan input: --changes, --commit <ref>, <path file/folder>, atau "<deskripsi fitur>".',
+      'Provide an input: --changes, --commit <ref>, a <file/folder path>, or a "<feature description>".',
     )
   }
 
   try {
     const stat = fs.statSync(target)
     if (!stat.isFile() && !stat.isDirectory()) {
-      throw new CodebreakError(`Bukan file ataupun direktori: ${target}`)
+      throw new CodebreakError(`Neither a file nor a directory: ${target}`)
     }
     return { kind: 'file', target: path.resolve(target) }
   } catch (err) {
