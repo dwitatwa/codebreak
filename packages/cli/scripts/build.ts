@@ -45,6 +45,7 @@ writeFileSync(manifestFile, manifest)
 
 // ── 3. Plain bundle (dist/cli.js untuk symlink/dev) ─────────────────────────
 console.log('▸ bundle dist/cli.js')
+mkdirSync(path.join(cliDir, 'dist'), { recursive: true })
 const plain = await Bun.build({
   entrypoints: [path.join(cliDir, 'src/cli.ts')],
   target: 'bun',
@@ -55,6 +56,13 @@ if (!plain.success) {
   console.error(plain.logs)
   process.exit(1)
 }
+// Build non-compile mengembalikan artefak di memori — tulis manual ke dist/
+const jsOutput = plain.outputs.find((o) => o.kind === 'entry-point')
+if (!jsOutput) {
+  console.error('entry-point output tidak ditemukan')
+  process.exit(1)
+}
+await Bun.write(path.join(cliDir, 'dist', 'cli.js'), jsOutput)
 
 // ── 4. Compile binaries ──────────────────────────────────────────────────────
 const TARGETS = [
