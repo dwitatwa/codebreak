@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'bun:test'
 import { loadConfig, projectConfigPath, userConfigPath } from '../src/config.js'
 import { binScriptName } from '../src/util/platform.js'
 

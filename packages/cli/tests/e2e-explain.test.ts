@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import type { CodebreakConfig } from '../src/config.js'
 import { explain } from '../src/core/explain.js'
 import type { CompletionRequest, LlmProvider } from '../src/llm/types.js'

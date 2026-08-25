@@ -1,6 +1,6 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ComponentType } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { fetchDocs, loadDocModule, type DocMeta } from '../api'
+import { fetchDocHtml, fetchDocs, type DocMeta } from '../api'
 import { TypeBadge } from '../components/Sidebar'
 
 interface TocItem {
@@ -11,7 +11,7 @@ interface TocItem {
 
 export default function DocPage() {
   const { slug = '' } = useParams()
-  const [Comp, setComp] = useState<ComponentType | null>(null)
+  const [html, setHtml] = useState<string | null>(null)
   const [compileError, setCompileError] = useState<string | null>(null)
   const [rawContent, setRawContent] = useState<string>('')
   const [meta, setMeta] = useState<DocMeta | null>(null)
@@ -20,7 +20,7 @@ export default function DocPage() {
 
   useEffect(() => {
     let alive = true
-    setComp(null)
+    setHtml(null)
     setCompileError(null)
     setRawContent('')
     setToc([])
@@ -31,13 +31,13 @@ export default function DocPage() {
       })
       .catch(() => {})
 
-    loadDocModule(slug).then((mod) => {
+    fetchDocHtml(slug).then((doc) => {
       if (!alive) return
-      if (mod.__error || !mod.default) {
-        setCompileError(mod.__error ?? 'Modul dokumen kosong.')
+      if (!doc.ok) {
+        setCompileError(doc.error ?? 'Dokumen gagal dikompilasi.')
         void loadRaw(slug).then((raw) => alive && setRawContent(raw))
       } else {
-        setComp(() => mod.default)
+        setHtml(doc.html)
       }
     })
 
@@ -46,9 +46,9 @@ export default function DocPage() {
     }
   }, [slug])
 
-  // TOC dibaca dari DOM setelah MDX ter-render (rehype-slug memberi id heading)
+  // TOC dibaca dari DOM setelah HTML dokumen ter-render (rehype-slug memberi id heading)
   useLayoutEffect(() => {
-    if (!Comp || !articleRef.current) return
+    if (html === null || !articleRef.current) return
     const headings = articleRef.current.querySelectorAll('h2[id], h3[id]')
     const items: TocItem[] = []
     headings.forEach((h) => {
@@ -59,7 +59,7 @@ export default function DocPage() {
       })
     })
     setToc(items)
-  }, [Comp])
+  }, [html])
 
   return (
     <div className="flex">
@@ -74,7 +74,7 @@ export default function DocPage() {
           </header>
         )}
 
-        {!Comp && !compileError && <p className="text-neutral-500">Menyiapkan dokumen…</p>}
+        {html === null && !compileError && <p className="text-neutral-500">Menyiapkan dokumen…</p>}
 
         {compileError && (
           <>
@@ -88,10 +88,11 @@ export default function DocPage() {
           </>
         )}
 
-        {Comp && (
-          <div className="prose prose-neutral max-w-none prose-pre:bg-neutral-900 prose-pre:text-neutral-100">
-            <Comp />
-          </div>
+        {html !== null && (
+          <div
+            className="prose prose-neutral max-w-none prose-pre:bg-neutral-900 prose-pre:text-neutral-100"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
         )}
       </article>
 
@@ -121,7 +122,7 @@ export default function DocPage() {
   )
 }
 
-/** Endpoint teks mentah untuk fallback — dilayani middleware /api/docs?raw=<slug> */
+/** Konten mentah untuk fallback saat MDX gagal dikompilasi */
 async function loadRaw(slug: string): Promise<string> {
   const res = await fetch(`/api/docs?raw=${encodeURIComponent(slug)}`)
   if (!res.ok) throw new Error('tidak bisa memuat konten mentah')

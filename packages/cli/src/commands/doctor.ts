@@ -1,5 +1,4 @@
 import fs from 'node:fs'
-import path from 'node:path'
 import pc from 'picocolors'
 import { describeConfigSources, loadConfig, resolveApiKey } from '../config.js'
 import { currentBranch, getGit } from '../git/repo.js'
@@ -86,18 +85,16 @@ export async function runDoctor(): Promise<void> {
     print('warn', 'Direktori dokumen belum ada', docsDir)
   }
 
-  // 6. Viewer
+  // 6. Frontend shell (aset statis hasil build)
   try {
-    const pkgUrl = import.meta.resolve('@codebreak/viewer/package.json')
-    const viewerRoot = path.dirname(fs.realpathSync(new URL(pkgUrl).pathname))
-    const hasVite = fs.existsSync(path.join(viewerRoot, 'node_modules', '.bin', 'vite'))
-    if (hasVite) {
-      print('ok', 'Viewer terinstall')
+    const { ASSETS } = await import('../viewer/assets.generated.js')
+    if (Object.keys(ASSETS).length > 0) {
+      print('ok', 'Frontend shell ter-bundle', `${Object.keys(ASSETS).length} aset`)
     } else {
-      print('warn', 'Viewer belum punya node_modules', 'jalankan pnpm install di root proyek codebreak')
+      print('warn', 'Shell frontend belum di-build', 'jalankan `bun run build:viewer`')
     }
   } catch {
-    print('warn', 'Package viewer tidak ditemukan', 'jalankan pnpm install di root proyek codebreak')
+    print('warn', 'Shell frontend belum di-build', 'jalankan `bun run build:viewer`')
   }
 
   console.log()

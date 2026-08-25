@@ -19,31 +19,38 @@ codebreak explain "payment webhook"  # LLM otomatis mencari file relevan
 
 ## Setup
 
-Butuh Node.js ≥ 20 dan [pnpm](https://pnpm.io) (`corepack enable`).
+### End user — tanpa Node, cukup satu binary
 
-### Linux / macOS
+Linux / macOS:
 
 ```bash
-git clone git@github.com:<user>/codebreak.git && cd codebreak
-corepack enable
-pnpm install
-pnpm build
-ln -sf "$(pwd)/packages/cli/dist/cli.js" ~/.local/bin/codebreak   # macOS: /usr/local/bin juga bisa
+curl -fsSL https://raw.githubusercontent.com/dwitatwa/codebreak/main/install.sh | bash
 ```
 
-### Windows
-
-Jalankan di PowerShell (Node ≥ 20 + Git for Windows):
+Windows (PowerShell):
 
 ```powershell
-git clone https://github.com/<user>/codebreak.git; cd codebreak
-corepack enable
-pnpm install
-pnpm build
-pnpm link --global     # shim masuk %LOCALAPPDATA%\pnpm — jalankan `pnpm setup` bila belum di PATH
+irm https://raw.githubusercontent.com/dwitatwa/codebreak/main/install.ps1 | iex
 ```
 
-Viewer otomatis memakai `vite.cmd` dan pembuka browser yang benar di Windows/macOS.
+Atau download manual `codebreak-<os>-<arch>` dari [Releases](https://github.com/dwitatwa/codebreak/releases),
+jadikan executable, dan letakkan di PATH.
+
+### Developer / from source
+
+Butuh [Bun](https://bun.sh) ≥ 1.1 (Node tidak diperlukan):
+
+```bash
+git clone git@github.com:dwitatwa/codebreak.git && cd codebreak
+bun install
+bun run build          # shell viewer + asset manifest + binary 5 platform
+ln -sf "$(pwd)/packages/cli/dist/cli.js" ~/.local/bin/codebreak   # opsional: perintah global
+bun test               # 63 unit/integration tests
+```
+
+`bun run dev` menjalankan CLI langsung dari TypeScript. Vite hanya dipakai sebagai
+build-time tool untuk frontend shell (`packages/viewer`) — runtime sama sekali tidak
+menyentuh Node/Vite.
 
 ### Konfigurasi LLM
 
@@ -164,11 +171,9 @@ Cek sumber mana yang aktif: `codebreak doctor`.
 Repo ini belum punya commit; cara rapi memulainya:
 
 ```bash
-git add .gitignore pnpm-workspace.yaml package.json tsconfig.base.json README.md skills/ packages/
-git commit -m "feat: codebreak core — explain CLI + viewer + LLM pipeline"
-# (opsional, jika ingin riwayat terpisah)
-#   commit 2: integrasi agen/skill · commit 3: init/remove + lintas platform
-git remote add origin git@github.com:<user>/codebreak.git
+git add -A
+git commit -m "feat: codebreak — LLM code explainer CLI + viewer"
+git remote add origin git@github.com:<user>/codebreak.git   # jika belum
 git push -u origin main
 ```
 
@@ -180,32 +185,36 @@ Buat repo kosongnya dulu di github.com (SSH key sudah tersedia di mesin ini).
 
 ```
 packages/
-├── cli/       # bin "codebreak" — commander, simple-git, openai SDK
+├── cli/       # bin "codebreak" (Bun) — commander, simple-git, openai SDK
+│   ├── scripts/build.ts   # shell → asset manifest → bundle + compile 5 platform
 │   └── src/
-│       ├── commands/   # explain | add | view | skill | doctor
+│       ├── commands/   # explain | add | view | skill | init | remove | doctor
 │       ├── core/       # orkestrator + gatherer material per mode
 │       ├── inputs/     # resolver input, walker file, tipe konteks
 │       ├── git/        # wrapper git (status/diff/show/range)
 │       ├── llm/        # abstraksi provider, prompts, pipeline relevance
-│       └── render/     # emitter MDX
-└── viewer/    # Vite + React — plugin kustom menyajikan .codebreak/docs/*.mdx
-    └── src/   # Home (daftar), DocPage (render MDX + TOC), Sidebar
+│       ├── render/     # emitter MDX
+│       └── viewer/     # Bun.serve: static shell + API + MDX→HTML on-demand + SSE
+└── viewer/    # React shell — dibuild Vite menjadi aset statis (build-time only)
+    └── src/   # Home (daftar), DocPage (fetch HTML + TOC), Sidebar, LiveReload (SSE)
 skills/
-└── codebreak/SKILL.md   # skill kanonik untuk agent harness (disalin ke dist saat build)
+└── codebreak/SKILL.md   # skill kanonik untuk agent harness (di-inline saat build)
 ```
 
-- **Viewer** adalah plugin Vite kustom: `/api/docs` untuk listing metadata, `/@codebreak-doc/*`
-  mengompilasi MDX on-the-fly (remark-gfm + shiki) menjadi modul React, dengan hot reload saat
-  dokumen baru dibuat.
+- **Server dokumen** berjalan in-process via `Bun.serve`: `/api/docs` untuk listing,
+  `/api/doc/<slug>` mengompilasi MDX on-demand (remark-gfm + Shiki) menjadi HTML string,
+  dan `/events` (SSE) memberi hot reload saat dokumen baru dibuat.
+- **Vite** hanya dipakai `bun run build` untuk mengompilasi shell frontend menjadi
+  aset statis yang kemudian ter-embed di binary lewat asset manifest.
 - **Provider LLM** adalah interface tipis; menambah provider non-OpenAI-compatible (mis. Anthropic
   native) = satu class baru di `packages/cli/src/llm/`.
 
 ## Development
 
 ```bash
-pnpm test              # vitest (47 test: resolver, git fixture, truncation, prompts, e2e mock)
-pnpm build             # build CLI
-pnpm --filter @codebreak/viewer dev   # jalankan viewer manual
+bun test               # 63 test: resolver, git fixture, truncation, prompts, e2e mock
+bun run build          # viewer shell + manifest + dist/cli.js + binary 5 platform
+bun run dev            # jalankan CLI langsung dari TypeScript
 ```
 
 ## Catatan desain

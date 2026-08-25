@@ -1,40 +1,18 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import pc from 'picocolors'
 import { CodebreakError } from '../errors.js'
+import skillMarkdown from '../../../../skills/codebreak/SKILL.md'
 
 /**
- * Cari SKILL.md kanonik dengan menelusuri ke atas dari lokasi modul ini.
- * Tahan perubahan layout hasil bundling (cli.js / chunk-* di dist/) maupun mode source.
+ * SKILL.md di-inline oleh loader .md (preload bunfig saat dev, Bun.build saat compile)
+ * sehingga binary tetap membawa skill tanpa file eksternal.
  */
-function skillCandidates(): string[] {
-  const here = path.dirname(fileURLToPath(import.meta.url))
-  const relatives = ['dist/skill/SKILL.md', 'skill/SKILL.md', 'skills/codebreak/SKILL.md']
-  const out: string[] = []
-  let cur = here
-  for (let i = 0; i < 6; i += 1) {
-    for (const rel of relatives) {
-      const candidate = path.join(cur, rel)
-      if (!out.includes(candidate)) out.push(candidate)
-    }
-    const parent = path.dirname(cur)
-    if (parent === cur) break
-    cur = parent
-  }
-  return out
-}
+const skillText = String(skillMarkdown)
 
 function loadSkillText(): string {
-  for (const p of skillCandidates()) {
-    try {
-      return fs.readFileSync(p, 'utf8')
-    } catch {
-      continue
-    }
-  }
-  throw new CodebreakError('SKILL.md tidak ditemukan. Jalankan `pnpm build` di root proyek codebreak.')
+  return skillText
 }
 
 export type SkillTarget = 'project' | 'user'

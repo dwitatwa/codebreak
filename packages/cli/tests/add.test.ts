@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { parseAgentDoc } from '../src/commands/add.js'
 import { writeAgentDoc } from '../src/render/mdx.js'
 

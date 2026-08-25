@@ -1,12 +1,6 @@
-import type { ComponentType } from 'react'
+import type { DocMeta } from './docs-meta'
 
-export interface DocMeta {
-  slug: string
-  title: string
-  type: string
-  date: string
-  source: string
-}
+export type { DocMeta }
 
 export async function fetchDocs(): Promise<DocMeta[]> {
   const res = await fetch('/api/docs')
@@ -14,9 +8,18 @@ export async function fetchDocs(): Promise<DocMeta[]> {
   return (await res.json()) as DocMeta[]
 }
 
-/** Dynamic import modul MDX yang dikompilasi plugin vite kustom */
-export function loadDocModule(
-  slug: string,
-): Promise<{ default: ComponentType | null; __error?: string }> {
-  return import(/* @vite-ignore */ `${'/@codebreak-doc/'}${encodeURIComponent(slug)}.mdx`)
+export interface FetchedDoc {
+  ok: boolean
+  html: string
+  error?: string
+}
+
+/** Ambil dokumen yang sudah dikompilasi server menjadi HTML */
+export async function fetchDocHtml(slug: string): Promise<FetchedDoc> {
+  const res = await fetch(`/api/doc/${encodeURIComponent(slug)}`)
+  if (!res.ok) {
+    // tetap kembalikan bentuk fallback agar UI menampilkan pesan + teks mentah
+    return { ok: false, html: '', error: `HTTP ${res.status}` }
+  }
+  return (await res.json()) as FetchedDoc
 }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { buildSystemPrompt, buildUserPrompt, localeName, tldrHeading } from '../src/llm/prompts.js'
 import type { GatheredContext } from '../src/inputs/context.js'
 

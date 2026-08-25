@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { parseCommitRef } from '../src/git/repo.js'
 
 describe('parseCommitRef', () => {

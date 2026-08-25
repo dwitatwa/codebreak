@@ -2,16 +2,24 @@
   "name": "codebreak-monorepo",
   "private": true,
   "version": "0.1.0",
-  "packageManager": "pnpm@11.23.0",
+  "workspaces": [
+    "packages/*"
+  ],
   "engines": {
-    "node": ">=20"
+    "bun": ">=1.1"
   },
   "scripts": {
-    "build": "pnpm -r build",
-    "test": "pnpm -r test",
-    "view": "pnpm --filter @codebreak/viewer dev"
+    "dev": "bun run packages/cli/src/cli.ts",
+    "test": "bun test --timeout 30000",
+    "build": "bun run packages/cli/scripts/build.ts",
+    "build:viewer": "bun run packages/viewer/scripts/build.ts"
   },
   "devDependencies": {
+    "@types/bun": "^1.1.14",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
     "typescript": "^5.6.3"
   }
 }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'bun:test'
 import { CharBudget } from '../src/util/budget.js'
 import { truncateMiddle } from '../src/util/truncate.js'
 import { extractJson } from '../src/llm/relevance.js'
