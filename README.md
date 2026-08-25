@@ -218,3 +218,7 @@ skills/
 - The relevance pipeline does a single selection round over a repo map (max ~2500 paths);
   the default context budget is ~180k characters with clearly marked mid-file truncation.
 - Binary files are skipped; untracked files are included in `--changes` mode.
+
+## License
+
+MIT License — see the [LICENSE](LICENSE) file for details.

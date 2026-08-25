@@ -1,6 +1,7 @@
 {
   "name": "codebreak-monorepo",
   "private": true,
+  "license": "MIT",
   "version": "0.3.0",
   "workspaces": [
     "packages/*"
