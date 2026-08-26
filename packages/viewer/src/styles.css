@@ -232,9 +232,12 @@ body {
   border-radius: 0.5rem;
   border: 1px solid var(--color-border-subtle);
   background-color: var(--color-inset);
-  overflow: hidden;
+  overflow-x: auto;
 }
 .prose .cb-code-lang {
+  /* stays visible when the code scrolls horizontally */
+  position: sticky;
+  left: 0;
   padding: 0.25rem 0.75rem;
   font-size: 0.625rem;
   text-transform: uppercase;
@@ -247,7 +250,10 @@ body {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-size: 0.75rem;
   line-height: 1.6;
-  overflow-x: auto;
+  /* Size to the widest line so line backgrounds/highlights span the full
+     scrollable width — a plain block would clip them at the visible edge. */
+  width: max-content;
+  min-width: 100%;
 }
 .prose .cb-code-line {
   display: flex;
