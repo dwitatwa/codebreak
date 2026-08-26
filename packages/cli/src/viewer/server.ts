@@ -110,7 +110,7 @@ export function startViewerServer(opts: ViewerServerOptions): ViewerServer {
     })
 
   const server = Bun.serve({
-    port: opts.port ?? 5173,
+    port: opts.port ?? 2728,
     async fetch(req) {
       const url = new URL(req.url)
 

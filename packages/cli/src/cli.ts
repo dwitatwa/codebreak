@@ -49,7 +49,7 @@ program
 program
   .command('view')
   .description('Run the local web viewer for documents in the current repo')
-  .option('--port <port>', 'port HTTP viewer', '5173')
+  .option('--port <port>', 'port HTTP viewer', '2728')
   .option('--no-open', "don't open the browser automatically")
   .action(async (opts) => {
     await runView({ port: Number(opts.port), open: opts.open })
