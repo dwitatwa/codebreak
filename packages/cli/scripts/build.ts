@@ -1,9 +1,9 @@
 /**
- * Build pipeline codebreak:
- *   1. vite build untuk shell frontend (build-time only)
- *   2. generate asset manifest → ter-bundle deterministik ke binary
- *   3. plain bundle dist/cli.js (untuk symlink/dev)
- *   4. compile binary mandiri × 5 target platform
+ * codebreak build pipeline:
+ *   1. vite build for the frontend shell (build-time only)
+ *   2. generate asset manifest → bundled deterministically into the binary
+ *   3. plain dist/cli.js bundle (for symlink/dev)
+ *   4. compile standalone binaries × N target platforms
  */
 import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
@@ -27,7 +27,7 @@ runStep(['bun', 'run', 'build:viewer'], repoRoot)
 console.log('▸ generate asset manifest')
 generateManifest()
 
-// ── 3. Plain bundle (dist/cli.js untuk symlink/dev) ─────────────────────────
+// ── 3. Plain bundle (dist/cli.js for symlink/dev) ───────────────────────────
 console.log('▸ bundle dist/cli.js')
 mkdirSync(path.join(cliDir, 'dist'), { recursive: true })
 const plain = await Bun.build({
@@ -40,10 +40,10 @@ if (!plain.success) {
   console.error(plain.logs)
   process.exit(1)
 }
-// Build non-compile mengembalikan artefak di memori — tulis manual ke dist/
+// Non-compile builds keep artifacts in memory — write them manually to dist/
 const jsOutput = plain.outputs.find((o) => o.kind === 'entry-point')
 if (!jsOutput) {
-  console.error('entry-point output tidak ditemukan')
+  console.error('entry-point output not found')
   process.exit(1)
 }
 await Bun.write(path.join(cliDir, 'dist', 'cli.js'), jsOutput)
@@ -67,7 +67,7 @@ for (const target of TARGETS) {
     target: 'bun',
     minify: true,
     plugins: [mdPlugin],
-    // Tipe compile belum lengkap di beberapa versi @types/bun
+    // The compile type is incomplete in some versions of @types/bun
     compile: { target, outfile },
   } as never)
   if (!result.success) {
@@ -76,4 +76,4 @@ for (const target of TARGETS) {
   }
 }
 
-console.log('\n✓ Selesai. Binary di packages/cli/dist-binaries/')
+console.log('\n✓ Done. Binaries in packages/cli/dist-binaries/')

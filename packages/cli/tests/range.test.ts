@@ -16,7 +16,7 @@ describe('parseCommitRef', () => {
     expect(spec.to).toBe('HEAD')
   })
 
-  it('range A...B juga diterima', () => {
+  it('range A...B is also accepted', () => {
     const spec = parseCommitRef('main...feature/x')
     expect(spec.kind).toBe('range')
     expect(spec.from).toBe('main')

@@ -18,7 +18,7 @@ export async function getGit(cwd: string): Promise<SimpleGit> {
   return git
 }
 
-/** Naikkan direktori sampai menemukan .git (file atau dir); null jika tidak ketemu */
+/** Walk up directories until .git is found (file or dir); null if not found */
 export function findGitRoot(startDir: string): string | null {
   let cur = path.resolve(startDir)
   while (true) {
@@ -48,14 +48,14 @@ export interface UntrackedFile {
 }
 
 export interface ChangesGather {
-  /** Diff gabungan staged+unstaged terhadap HEAD (tracked files) */
+  /** Combined staged+unstaged diff against HEAD (tracked files) */
   diff: string
   untracked: UntrackedFile[]
 }
 
 /**
- * Local changes = staged + unstaged terhadap HEAD, plus isi file untracked.
- * Di repo yang belum punya commit pun tetap jalan (diff kosong, semua untracked).
+ * Local changes = staged + unstaged against HEAD, plus untracked file contents.
+ * Also works in a repo with no commits yet (empty diff, everything untracked).
  */
 export async function gatherChanges(
   git: SimpleGit,
@@ -70,7 +70,7 @@ export async function gatherChanges(
     try {
       diff = await git.diff(['--no-color', '--no-ext-diff', 'HEAD'])
     } catch {
-      // Repo tanpa commit pertama: git diff HEAD gagal → anggap semua untracked.
+      // Repo without a first commit: git diff HEAD fails → treat everything as untracked.
       diff = ''
     }
   }
@@ -106,11 +106,11 @@ export interface CommitSpec {
   ref?: string
   from?: string
   to?: string
-  /** String persis seperti diketik user, untuk label dokumen */
+  /** The exact string as typed by the user, used as the document label */
   label: string
 }
 
-/** Parse "HEAD", "abc1234", atau range "A..B" / "A...B" */
+/** Parse "HEAD", "abc1234", or a range "A..B" / "A...B" */
 export function parseCommitRef(input: string): CommitSpec {
   const trimmed = input.trim()
   const m = /^(.+?)\.{2,3}(.+)$/.exec(trimmed)
@@ -122,7 +122,7 @@ export function parseCommitRef(input: string): CommitSpec {
 
 async function assertRefExists(git: SimpleGit, ref: string): Promise<void> {
   try {
-    // "<ref>^{}" memvalidasi ref ada DAN bisa di-peel ke objek dasarnya
+    // "<ref>^{}" validates that the ref exists AND can be peeled to its base object
     await git.revparse([`${ref}^{}`])
   } catch {
     throw new CodebreakError(`Unknown git ref: "${ref}"`)
@@ -131,11 +131,11 @@ async function assertRefExists(git: SimpleGit, ref: string): Promise<void> {
 
 export interface CommitGather {
   spec: CommitSpec
-  /** Subject + author + tanggal untuk judul dokumen */
+  /** Subject + author + date for the document title */
   meta: string
   /** Patch/diff material */
   patch: string
-  /** Daftar "hash subject" utk mode range */
+  /** List of "hash subject" entries for range mode */
   commits: string[]
 }
 
@@ -152,7 +152,7 @@ export async function gatherCommit(git: SimpleGit, spec: CommitSpec): Promise<Co
   const { from, to } = spec
   await assertRefExists(git, from!)
   await assertRefExists(git, to!)
-  const meta = `Perubahan dari ${from} ke ${to}`
+  const meta = `Changes from ${from} to ${to}`
   const log = await git.raw(['log', '--no-color', '--format=%h %s', `${from}..${to}`])
   const patch = await git.diff(['--no-color', '--no-ext-diff', from!, to!])
   return { spec, meta, patch, commits: log.split('\n').filter(Boolean) }
@@ -166,7 +166,7 @@ const BINARY_EXTENSIONS = new Set([
 
 function matchExtension(file: string, exts: Set<string>): boolean {
   const ext = path.extname(file).toLowerCase()
-  // file tanpa ekstensi hanya lolos kalau filter tidak aktif
+  // extensionless files only pass when the filter is inactive
   return ext === '' ? false : exts.has(ext)
 }
 

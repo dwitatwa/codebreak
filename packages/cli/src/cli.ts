@@ -48,7 +48,7 @@ program
 
 program
   .command('view')
-  .description('Jalankan web viewer lokal untuk dokumen di repo saat ini')
+  .description('Run the local web viewer for documents in the current repo')
   .option('--port <port>', 'port HTTP viewer', '5173')
   .option('--no-open', "don't open the browser automatically")
   .action(async (opts) => {
@@ -127,7 +127,7 @@ async function main(): Promise<void> {
     if (err instanceof CodebreakError) {
       console.error(pc.red(`✗ ${err.message}`))
     } else if ((err as { name?: string })?.name === 'CommanderError') {
-      // pesan usage sudah dicetak commander
+      // usage message already printed by commander
     } else {
       console.error(pc.red(`✗ ${(err as Error).message}`))
       console.error(pc.dim((err as Error).stack ?? ''))

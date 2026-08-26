@@ -4,13 +4,13 @@ import { truncateMiddle } from '../src/util/truncate.js'
 import { extractJson } from '../src/llm/relevance.js'
 
 describe('truncateMiddle', () => {
-  it('tidak memotong teks pendek', () => {
+  it('does not truncate short text', () => {
     const r = truncateMiddle('abc', 10)
     expect(r.text).toBe('abc')
     expect(r.truncated).toBe(false)
   })
 
-  it('memotong tengah dengan penanda', () => {
+  it('truncates the middle with a marker', () => {
     const text = 'x'.repeat(1000)
     const r = truncateMiddle(text, 200)
     expect(r.truncated).toBe(true)
@@ -18,43 +18,43 @@ describe('truncateMiddle', () => {
     expect(r.text).toContain('truncated')
   })
 
-  it('maxChars sangat kecil tetap aman', () => {
+  it('very small maxChars stays safe', () => {
     const r = truncateMiddle('hello world', 5)
     expect(r.truncated).toBe(true)
     expect(r.text).toContain('truncated')
-    // isi praktis habis, yang tersisa hanya penanda
+    // the content is practically gone; only the marker remains
     expect(r.text.length).toBeLessThanOrEqual(40)
   })
 })
 
 describe('CharBudget', () => {
-  it('mengalokasikan berurutan sampai habis', () => {
+  it('allocates sequentially until exhausted', () => {
     const b = new CharBudget(100)
     expect(b.take('a'.repeat(60))!.length).toBe(60)
     const second = b.take('b'.repeat(50))
     expect(second!.length).toBeLessThanOrEqual(40)
-    // budget persis habis
+    // budget is exactly used up
     expect(b.remaining).toBe(0)
     expect(b.take('c')).toBeNull()
   })
 })
 
 describe('extractJson', () => {
-  it('json polos', () => {
+  it('plain json', () => {
     expect(extractJson('{"files":["a.ts"]}')).toEqual({ files: ['a.ts'] })
   })
 
-  it('json dalam code fence', () => {
+  it('json inside a code fence', () => {
     expect(extractJson('```json\n{"files":["b.ts"]}\n```')).toEqual({ files: ['b.ts'] })
   })
 
-  it('json dibungkus basa-basi', () => {
+  it('json wrapped in pleasantries', () => {
     expect(extractJson('Sure! Here you go:\n{"files":["c.ts"]} hope that helps')).toEqual({
       files: ['c.ts'],
     })
   })
 
-  it('bukan json → null', () => {
+  it('not json → null', () => {
     expect(extractJson('no json here')).toBeNull()
   })
 })

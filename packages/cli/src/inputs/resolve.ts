@@ -10,9 +10,9 @@ export interface ExplainCliArgs {
 }
 
 /**
- * Prioritas: --changes > --commit > posisional.
- * Posisional jadi mode File kalau path-nya ada di disk, sisanya Description.
- * Kalau tidak ada input sama sekali, caller bisa fallback ke stdin (pipe).
+ * Priority: --changes > --commit > positional.
+ * A positional becomes File mode when the path exists on disk, otherwise Description.
+ * When there is no input at all, callers can fall back to stdin (pipe).
  */
 export function resolveInput(args: ExplainCliArgs): InputRequest {
   if (args.changes && args.commit) {
@@ -36,17 +36,17 @@ export function resolveInput(args: ExplainCliArgs): InputRequest {
     return { kind: 'file', target: path.resolve(target) }
   } catch (err) {
     if (err instanceof CodebreakError) throw err
-    // Path tidak ada di disk → anggap deskripsi fitur bahasa natural.
+    // Path not found on disk → treat it as a natural-language feature description.
     return { kind: 'description', text: target }
   }
 }
 
-/** true jika stdout/stdin dipipakan (bukan TTY) */
+/** true if stdout/stdin is piped (not a TTY) */
 export function stdinIsPiped(): boolean {
   return !process.stdin.isTTY
 }
 
-/** Baca seluruh stdin; '' jika langsung EOF */
+/** Read all of stdin; '' on immediate EOF */
 export function readStdin(): Promise<string> {
   return new Promise((resolve) => {
     let data = ''
@@ -55,7 +55,7 @@ export function readStdin(): Promise<string> {
       data += chunk
     })
     process.stdin.on('end', () => resolve(data.trim()))
-    // Jangan menggantung selamanya kalau tidak ada data
+    // Don't hang forever if there is no data
     process.stdin.on('error', () => resolve(''))
     setTimeout(() => resolve(data.trim()), 2_000).unref()
   })

@@ -1,9 +1,9 @@
 import { truncateMiddle } from './truncate.js'
 
 /**
- * Budget karakter global untuk material konteks.
- * Setiap bagian konteks "mengambil" dari budget sisa; kalau habis,
- * bagian berikutnya dipotong agresif atau ditolak.
+ * Global character budget for context material.
+ * Each context section "draws" from the remaining budget; once it runs out,
+ * subsequent sections are aggressively truncated or rejected.
  */
 export class CharBudget {
   private remainingChars: number
@@ -16,7 +16,7 @@ export class CharBudget {
     return this.remainingChars
   }
 
-  /** Ambil sepotong teks dalam batas budget sisa; null jika budget habis total */
+  /** Take a piece of text within the remaining budget; null if the budget is fully exhausted */
   take(text: string): string | null {
     if (this.remainingChars <= 0) return null
     const allowed = Math.min(text.length, this.remainingChars)

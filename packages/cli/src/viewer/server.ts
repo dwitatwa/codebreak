@@ -28,8 +28,8 @@ function safeRepoPath(root: string, rel: string): string | null {
 }
 
 /**
- * Dev mode: manifest belum digenerate → layani shell dari dist-static/ di disk.
- * Dicari dengan menelusuri ke atas dari lokasi modul (tahan perubahan layout bundel).
+ * Dev mode: the manifest hasn't been generated yet → serve the shell from dist-static/ on disk.
+ * Found by walking upward from the module location (resilient to bundle layout changes).
  */
 let staticRootCache: string | null | undefined
 function findStaticRoot(): string | null {
@@ -52,7 +52,7 @@ function findStaticRoot(): string | null {
 function readAssetFromDisk(key: string): string | null {
   const root = findStaticRoot()
   if (!root) return null
-  // cegah path traversal
+  // prevent path traversal
   const abs = path.resolve(root, key)
   if (!abs.startsWith(root)) return null
   try {
@@ -73,13 +73,13 @@ export interface ViewerServer {
 }
 
 /**
- * Web viewer lokal untuk dokumen .codebreak/docs — berjalan in-process
- * di atas Bun.serve (tanpa Vite/Node di runtime).
+ * Local web viewer for .codebreak/docs documents — runs in-process
+ * on top of Bun.serve (no Vite/Node at runtime).
  *
- * - `/` & `/assets/*`   : frontend shell statis dari asset manifest
- * - `/api/docs`         : metadata semua dokumen (?raw=<slug> untuk teks mentah)
- * - `/api/doc/<slug>`   : MDX dikompilasi on-demand menjadi HTML string
- * - `/events`           : SSE — dokumen baru/berubah memicu reload browser
+ * - `/` & `/assets/*`   : static frontend shell from the asset manifest
+ * - `/api/docs`         : metadata for all documents (?raw=<slug> for raw text)
+ * - `/api/doc/<slug>`   : MDX compiled on-demand into an HTML string
+ * - `/events`           : SSE — new/changed documents trigger a browser reload
  */
 export function startViewerServer(opts: ViewerServerOptions): ViewerServer {
   const { docsDir } = opts
@@ -96,7 +96,7 @@ export function startViewerServer(opts: ViewerServerOptions): ViewerServer {
     }
   }
 
-  // Hot reload: pantau folder dokumen dengan debounce kecil.
+  // Hot reload: watch the docs folder with a small debounce.
   let debounceTimer: ReturnType<typeof setTimeout> | null = null
   const watcher = fs.watch(docsDir, () => {
     if (debounceTimer) clearTimeout(debounceTimer)

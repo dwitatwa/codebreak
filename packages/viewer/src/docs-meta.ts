@@ -1,4 +1,4 @@
-/** Metadata dokumen — struktur identik dengan /api/docs dari server codebreak */
+/** Document metadata — structurally identical to /api/docs from the codebreak server */
 export interface DocMeta {
   slug: string
   title: string

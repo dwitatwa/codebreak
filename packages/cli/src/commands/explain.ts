@@ -25,8 +25,8 @@ export async function runExplain(target: string | undefined, flags: ExplainFlags
   let positional = target?.trim()
   let extraContext = flags.context ?? ''
 
-  // Stdin yang dipipakan: tanpa input lain → jadi deskripsi;
-  // dengan input lain → jadi konteks tambahan.
+  // Piped stdin: with no other input it becomes the description;
+  // with other input present it becomes extra context.
   if (stdinIsPiped()) {
     const piped = await readStdin()
     if (piped) {

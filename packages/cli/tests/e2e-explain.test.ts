@@ -62,14 +62,14 @@ afterAll(() => {
   fs.rmSync(dir, { recursive: true, force: true })
 })
 
-describe('explain end-to-end (provider tiruan)', () => {
-  it('mode description: LLM pilih file relevan lalu jelaskan', async () => {
+describe('explain end-to-end (scripted provider)', () => {
+  it('description mode: LLM picks relevant files then explains', async () => {
     const calls: string[] = []
     const provider = new ScriptedProvider((req) => {
       calls.push(req.system)
       if (req.system.includes('code-search assistant')) {
         expect(req.user).toContain('user authentication flow')
-        return '{"files": ["./src/auth/login.ts"], "reason": "berisi auth"}'
+        return '{"files": ["./src/auth/login.ts"], "reason": "contains auth"}'
       }
       return CANNED_DOC
     })
@@ -79,7 +79,7 @@ describe('explain end-to-end (provider tiruan)', () => {
       { input: { kind: 'description', text: 'user authentication flow' } },
     )
 
-    // path "./x" dinormalisasi
+    // "./x" paths are normalized
     expect(result.selectedFiles).toEqual(['src/auth/login.ts'])
     expect(calls.length).toBe(2)
     expect(fs.existsSync(result.docAbsPath)).toBe(true)
@@ -90,8 +90,8 @@ describe('explain end-to-end (provider tiruan)', () => {
     expect(result.tldrHeadingText).toBe('Summary')
   })
 
-  it('mode file: isi file masuk material & dokumen bertipe file', async () => {
-    const provider = new ScriptedProvider(() => '## Ringkasan\n- ok')
+  it('file mode: file content goes into the material & doc gets type file', async () => {
+    const provider = new ScriptedProvider(() => '## Summary\n- ok')
     const result = await explain(
       { provider, cwd: dir, cfg: makeCfg() },
       { input: { kind: 'file', target: path.join(dir, 'src/auth/login.ts') } },
@@ -101,7 +101,7 @@ describe('explain end-to-end (provider tiruan)', () => {
     expect(doc).toContain('type: file')
   })
 
-  it('--lang memfilter pemilihan file', async () => {
+  it('--lang filters file selection', async () => {
     const provider = new ScriptedProvider((req) => {
       if (req.system.includes('code-search assistant')) {
         expect(req.user).not.toContain('.mdx')
@@ -111,24 +111,24 @@ describe('explain end-to-end (provider tiruan)', () => {
     })
     await expect(
       explain({ provider, cwd: dir, cfg: makeCfg() }, {
-        input: { kind: 'description', text: 'dokumentasi' },
+        input: { kind: 'description', text: 'documentation' },
         lang: ['ts'],
       }),
     ).rejects.toThrow(/none matched this repository/)
   })
 
-  it('focus & context ikut ke prompt akhir', async () => {
+  it('focus & context are included in the final prompt', async () => {
     let finalUser = ''
     const provider = new ScriptedProvider((req) => {
       if (!req.system.includes('code-search assistant')) finalUser = req.user
-      return '## Ringkasan\n- ok'
+      return '## Summary\n- ok'
     })
     await explain({ provider, cwd: dir, cfg: makeCfg() }, {
       input: { kind: 'file', target: path.join(dir, 'src/auth/login.ts') },
       focus: 'error handling',
-      extraContext: 'kami pakai Postgres',
+      extraContext: 'we use Postgres',
     })
     expect(finalUser).toContain('error handling')
-    expect(finalUser).toContain('kami pakai Postgres')
+    expect(finalUser).toContain('we use Postgres')
   })
 })

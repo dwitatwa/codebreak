@@ -10,25 +10,25 @@ const CTX: GatheredContext = {
 }
 
 describe('buildSystemPrompt', () => {
-  it('memuat instruksi depth', () => {
+  it('includes depth instructions', () => {
     expect(buildSystemPrompt('line', 'id')).toContain('DETAIL LEVEL: line')
     expect(buildSystemPrompt('overview', 'id')).toContain('DETAIL LEVEL: overview')
     expect(buildSystemPrompt('block', 'id')).toContain('DETAIL LEVEL: block')
   })
 
-  it('meminta bahasa sesuai locale', () => {
+  it('requests language matching the locale', () => {
     expect(buildSystemPrompt('block', 'id')).toContain('Bahasa Indonesia')
     expect(buildSystemPrompt('block', 'en')).toContain('English')
   })
 
-  it('memuat aturan keamanan MDX dan heading TL;DR lokal', () => {
+  it('includes MDX safety rules and a localized TL;DR heading', () => {
     const sys = buildSystemPrompt('block', 'id')
     expect(sys).toContain('## Ringkasan')
     expect(sys).toContain('<details')
     expect(sys).toContain('Never write a bare "<"')
   })
 
-  it('memuat struktur komponen viewer (Block/CodeBlock/LineNotes/Note)', () => {
+  it('includes viewer component structure (Block/CodeBlock/LineNotes/Note)', () => {
     const sys = buildSystemPrompt('block', 'en')
     expect(sys).toContain('<Block name=')
     expect(sys).toContain('<CodeBlock lang=')
@@ -36,13 +36,13 @@ describe('buildSystemPrompt', () => {
     expect(sys).toContain('<Note line=')
   })
 
-  it('mengharuskan code first + implikasi pada notes', () => {
+  it('requires code first + implications on notes', () => {
     const sys = buildSystemPrompt('block', 'en')
     expect(sys).toContain('Code must come FIRST')
     expect(sys).toContain('MUST include at least one such implication')
   })
 
-  it('melarang elemen HTML lama (details/b)', () => {
+  it('forbids legacy HTML elements (details/b)', () => {
     const sys = buildSystemPrompt('block', 'en')
     expect(sys).toContain('Do NOT write <details>, <summary>, <b>')
     expect(sys).not.toContain('No import/export statements, no JSX components')
@@ -54,17 +54,17 @@ describe('buildSystemPrompt', () => {
 })
 
 describe('localeName', () => {
-  it('kenal kode umum & fallback', () => {
+  it('knows common codes & fallback', () => {
     expect(localeName('id')).toBe('Bahasa Indonesia')
     expect(localeName('xx')).toBe('Bahasa Indonesia')
   })
 })
 
 describe('buildUserPrompt', () => {
-  it('membungkus material, focus, dan context', () => {
+  it('wraps material, focus, and context', () => {
     const user = buildUserPrompt(CTX, {
       focus: 'error handling',
-      extraContext: 'kami pakai Postgres',
+      extraContext: 'we use Postgres',
     })
     expect(user).toContain('<task>')
     expect(user).toContain('<focus>\nPay special attention to this request from the user:\nerror handling')
@@ -73,13 +73,13 @@ describe('buildUserPrompt', () => {
     expect(user).toContain('+new')
   })
 
-  it('tanpa focus/context seksi tidak muncul', () => {
+  it('without focus/context the sections are absent', () => {
     const user = buildUserPrompt(CTX)
     expect(user).not.toContain('<focus>')
     expect(user).not.toContain('<extra-context>')
   })
 
-  it('memberi tahu bila material terpotong', () => {
+  it('mentions when material is truncated', () => {
     const user = buildUserPrompt({ ...CTX, truncated: true })
     expect(user).toContain('truncated')
   })

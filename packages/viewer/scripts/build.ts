@@ -1,6 +1,6 @@
 /**
  * Build shell frontend viewer menjadi aset statis (dist-static/).
- * Vite dipakai di sini sebagai build-time tool saja — runtime tidak menyentuhnya.
+ * Vite is used here as a build-time tool only — the runtime never touches it.
  */
 import path from 'node:path'
 

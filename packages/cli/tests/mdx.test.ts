@@ -5,11 +5,13 @@ import { describe, expect, it } from 'bun:test'
 import { emitDoc, extractTldr, sanitizeBody, slugify } from '../src/render/mdx.js'
 import type { DocFrontmatter } from '../src/render/mdx.js'
 
+const TODAY = new Date().toISOString().slice(0, 10)
+
 const FM: DocFrontmatter = {
   title: 'Local Changes',
   type: 'changes',
   source: 'local changes',
-  date: '2026-08-25',
+  date: TODAY,
   model: 'test-model',
   depth: 'block',
   locale: 'id',
@@ -20,28 +22,28 @@ function tmpCwd(): string {
 }
 
 describe('slugify', () => {
-  it('slug bersih', () => {
+  it('clean slug', () => {
     expect(slugify('Local Changes (3 files)')).toBe('local-changes-3-files')
   })
-  it('fallback kalau kosong', () => {
+  it('fallback when empty', () => {
     expect(slugify('???')).toBe('explain')
   })
 })
 
 describe('emitDoc', () => {
-  it('menulis file dengan frontmatter valid', () => {
+  it('writes a file with valid frontmatter', () => {
     const cwd = tmpCwd()
-    const doc = emitDoc(cwd, '# isi\n\nhalo', FM)
+    const doc = emitDoc(cwd, '# content\n\nhello', FM)
     expect(fs.existsSync(doc.absPath)).toBe(true)
-    expect(doc.relPath).toMatch(/^\.codebreak[/\\]docs[/\\]2026-08-25-local-changes\.mdx$/)
+    expect(doc.relPath).toMatch(new RegExp(`^\\.codebreak[/\\\\]docs[/\\\\]${TODAY}-local-changes\\.mdx$`))
     const content = fs.readFileSync(doc.absPath, 'utf8')
     expect(content.startsWith('---\n')).toBe(true)
     expect(content).toContain('title: Local Changes')
     expect(content).toContain('depth: block')
-    expect(content.trimEnd().endsWith('halo')).toBe(true)
+    expect(content.trimEnd().endsWith('hello')).toBe(true)
   })
 
-  it('tabrakan nama → sufiks -2', () => {
+  it('name collision → -2 suffix', () => {
     const cwd = tmpCwd()
     emitDoc(cwd, 'a', FM)
     const second = emitDoc(cwd, 'b', FM)
@@ -50,33 +52,33 @@ describe('emitDoc', () => {
 })
 
 describe('sanitizeBody', () => {
-  it('membuang frontmatter yang diselundupkan model', () => {
-    const body = sanitizeBody('---\ntitle: x\n---\n\n## Ringkasan\n- a')
-    expect(body.startsWith('## Ringkasan')).toBe(true)
+  it('strips frontmatter smuggled in by the model', () => {
+    const body = sanitizeBody('---\ntitle: x\n---\n\n## Summary\n- a')
+    expect(body.startsWith('## Summary')).toBe(true)
   })
 
-  it('membuang fence pembungkus utuh', () => {
-    const body = sanitizeBody('```markdown\n## Ringkasan\n```\n')
-    expect(body).toBe('## Ringkasan')
+  it('strips an intact wrapping fence', () => {
+    const body = sanitizeBody('```markdown\n## Summary\n```\n')
+    expect(body).toBe('## Summary')
   })
 
-  it('body normal tidak berubah', () => {
-    expect(sanitizeBody('  ## Ringkasan  ')).toBe('## Ringkasan')
+  it('normal body is left unchanged', () => {
+    expect(sanitizeBody('  ## Summary  ')).toBe('## Summary')
   })
 })
 
 describe('extractTldr', () => {
-  it('mengambil seksi Ringkasan', () => {
-    const body = '## Ringkasan\n- satu\n- dua\n\n## File: a.ts\nisi'
-    expect(extractTldr(body)).toBe('- satu\n- dua')
+  it('extracts the Summary section', () => {
+    const body = '## Summary\n- one\n- two\n\n## File: a.ts\ncontent'
+    expect(extractTldr(body)).toBe('- one\n- two')
   })
 
-  it('juga mengenali Summary (en)', () => {
+  it('also recognizes Summary (en)', () => {
     const body = '## Summary\n- one\n\n## Notes\nn'
     expect(extractTldr(body)).toBe('- one')
   })
 
-  it('kosong bila tidak ada', () => {
-    expect(extractTldr('tanpa heading')).toBe('')
+  it('empty when missing', () => {
+    expect(extractTldr('no heading')).toBe('')
   })
 })

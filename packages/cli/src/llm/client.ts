@@ -3,9 +3,9 @@ import type { ProviderConfig } from '../config.js'
 import type { CompletionRequest, LlmProvider } from './types.js'
 
 /**
- * Provider untuk endpoint OpenAI-compatible apa pun:
- * OpenAI, Ollama (/v1), LM Studio, Groq, OpenRouter, Together, vLLM, dst.
- * API key boleh kosong untuk server lokal yang tidak memerlukan auth.
+ * Provider for any OpenAI-compatible endpoint:
+ * OpenAI, Ollama (/v1), LM Studio, Groq, OpenRouter, Together, vLLM, etc.
+ * The API key may be empty for local servers that don't require auth.
  */
 export class OpenAICompatProvider implements LlmProvider {
   readonly name = 'openai-compat'
@@ -39,8 +39,8 @@ export class OpenAICompatProvider implements LlmProvider {
   }
 
   async ping(): Promise<string> {
-    // Tidak semua server kompatibel mengimplementasikan /models;
-    // kalau gagal kita coba request chat minimal sebagai fallback.
+    // Not every compatible server implements /models;
+    // if that fails, we fall back to a minimal chat request.
     try {
       const page = await this.client.models.list()
       const ids = []

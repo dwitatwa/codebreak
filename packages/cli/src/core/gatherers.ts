@@ -14,7 +14,7 @@ import { walkFiles } from '../inputs/files.js'
 import { CharBudget } from '../util/budget.js'
 
 export interface GatherOptions {
-  /** Filter ekstensi dari --lang, sudah dinormalisasi jadi ".ts" dst */
+  /** Extension filter from --lang, already normalized to ".ts" etc. */
   extensions?: Set<string>
   maxContextChars: number
 }
@@ -41,7 +41,7 @@ function langOf(file: string): string {
 
 const MAX_BYTES_PER_FILE = 96 * 1024
 
-/** Satu seksi file berbentuk heading + code fence, siap masuk material */
+/** A single file section in heading + code fence form, ready to go into the material */
 export function fileSection(absPath: string, displayPath: string): string | null {
   if (isBinaryFile(absPath)) return null
   let stat: fs.Stats
@@ -110,7 +110,7 @@ export async function gatherCommitContext(cwd: string, refInput: string, opts: G
   const parts: string[] = []
 
   if (commits.length > 0) {
-    const taken = budget.take(`## Commit dalam range\n\n${commits.map((c) => `- ${c}`).join('\n')}`)
+    const taken = budget.take(`## Commits in range\n\n${commits.map((c) => `- ${c}`).join('\n')}`)
     if (taken !== null) parts.push(taken)
   }
   const taken = budget.take(`## Patch\n\n\`\`\`diff\n${patch}\n\`\`\``)
@@ -152,7 +152,7 @@ export function gatherFilesContext(targetAbs: string, opts: GatherOptions): Gath
   }
 
   if (sections.length === 0) {
-    const hint = opts.extensions ? ` dengan filter ekstensi ${[...(opts.extensions ?? [])].join(',')}` : ''
+    const hint = opts.extensions ? ` with extension filter ${[...(opts.extensions ?? [])].join(',')}` : ''
     throw new CodebreakError(`No readable text files found in ${targetAbs}${hint}.`)
   }
 
@@ -160,7 +160,7 @@ export function gatherFilesContext(targetAbs: string, opts: GatherOptions): Gath
   return {
     kind: 'file',
     title: stat.isDirectory() ? `Folder ${base}/` : base,
-    sourceLabel: stat.isDirectory() ? `${base}/ (${rels.length} file)` : base,
+    sourceLabel: stat.isDirectory() ? `${base}/ (${rels.length} file(s))` : base,
     material: sections.join('\n\n'),
     selectedFiles: rels,
     truncated: budget.remaining <= 0,

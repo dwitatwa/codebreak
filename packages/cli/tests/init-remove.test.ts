@@ -22,8 +22,8 @@ afterAll(() => {
 })
 
 describe('codebreak init', () => {
-  it('membuat config project + skill + entri gitignore', async () => {
-    await runInit({ skills: 'project' }) // target minimal supaya test cepat
+  it('creates project config + skill + gitignore entry', async () => {
+    await runInit({ skills: 'project' }) // minimal target so the test stays fast
 
     const cfgFile = path.join(project, '.codebreak', 'config.json')
     expect(fs.existsSync(cfgFile)).toBe(true)
@@ -36,13 +36,13 @@ describe('codebreak init', () => {
     expect(fs.readFileSync(gitignorePath, 'utf8')).toContain('.codebreak/docs/')
   })
 
-  it('idempoten pada gitignore, tapi config butuh --force', async () => {
+  it('idempotent for gitignore, but config requires --force', async () => {
     await expect(runInit({ skills: 'project' })).rejects.toThrow(/already exists/)
 
     const before = fs.readFileSync(gitignorePath, 'utf8')
     await runInit({ force: true, skills: 'project' })
     const after = fs.readFileSync(gitignorePath, 'utf8')
-    // tidak menduplikasi entri gitignore
+    // does not duplicate the gitignore entry
     expect(after.split('.codebreak/docs/').length - 1).toBe(
       before.split('.codebreak/docs/').length - 1,
     )
@@ -50,8 +50,8 @@ describe('codebreak init', () => {
 })
 
 describe('codebreak remove', () => {
-  it('menghapus config & artefak skill, docs dipertahankan secara default', async () => {
-    // siapkan dokumen palsu untuk memastikan tidak ikut terhapus
+  it('removes config & skill artifacts, docs are kept by default', async () => {
+    // plant a fake document to make sure it is not deleted
     fs.mkdirSync(path.join(project, '.codebreak', 'docs'), { recursive: true })
     fs.writeFileSync(path.join(project, '.codebreak', 'docs', 'x.mdx'), '# x')
 
@@ -63,7 +63,7 @@ describe('codebreak remove', () => {
     expect(fs.existsSync(path.join(project, '.codebreak', 'docs', 'x.mdx'))).toBe(true)
   })
 
-  it('--all menghapus seluruh .codebreak/', () => {
+  it('--all removes the entire .codebreak/', () => {
     runRemove({ all: true })
     expect(fs.existsSync(path.join(project, '.codebreak'))).toBe(false)
   })

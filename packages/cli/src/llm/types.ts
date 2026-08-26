@@ -5,9 +5,9 @@ export interface CompletionRequest {
 }
 
 /**
- * Abstraksi provider LLM. Implementasi v1: OpenAICompatProvider.
- * Menambah provider lain (mis. Anthropic native) = class baru yang
- * mengimplementasikan interface ini, tanpa menyentuh pipeline.
+ * LLM provider abstraction. v1 implementation: OpenAICompatProvider.
+ * Adding another provider (e.g. native Anthropic) = a new class implementing
+ * this interface, without touching the pipeline.
  */
 export interface LlmProvider {
   readonly name: string

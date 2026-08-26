@@ -16,7 +16,7 @@ export interface AddFlags {
 
 const KNOWN_TYPES = new Set(['changes', 'commit', 'file', 'description', 'note'])
 
-/** Judul cadangan hanya dari H1 (# Judul) — bukan sub-heading seperti ## Ringkasan */
+/** Fallback title comes only from the first H1 (# Title) — not sub-headings like ## Summary */
 function firstHeading(body: string): string | undefined {
   const m = /^#\s+(.+?)\s*$/m.exec(body)
   return m?.[1]
@@ -28,9 +28,9 @@ export interface ParsedAgentDoc {
 }
 
 /**
- * Gabungkan frontmatter bawaan file, flag CLI, dan default.
- * Prioritas: flag > frontmatter file > heading pertama (title) > default.
- * `date` selalu diisi hari ini; `model` menandai dokumen buatan agen.
+ * Merge the file's built-in frontmatter, CLI flags, and defaults.
+ * Priority: flags > file frontmatter > first heading (title) > default.
+ * `date` is always set to today; `model` marks the doc as agent-generated.
  */
 export function parseAgentDoc(raw: string, flags: AddFlags): ParsedAgentDoc {
   let body = raw.trim()
@@ -43,7 +43,7 @@ export function parseAgentDoc(raw: string, flags: AddFlags): ParsedAgentDoc {
       const parsed = parseYaml(fmMatch[1] ?? '')
       if (typeof parsed === 'object' && parsed !== null) existing = parsed as Record<string, unknown>
     } catch {
-      // frontmatter rusak → buang dan lanjut tanpa itu
+      // broken frontmatter → discard it and continue without it
     }
     body = body.slice(fmMatch[0].length).trim()
   }

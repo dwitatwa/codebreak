@@ -17,8 +17,8 @@ function rmRfIfExist(target: string): boolean {
 }
 
 /**
- * Copot integrasi codebreak dari project ini (kebalikan `codebreak init`).
- * Konservatif: dokumen & config tidak ikut terhapus kecuali diminta.
+ * Remove codebreak integration from this project (inverse of `codebreak init`).
+ * Conservative: docs & config are not deleted unless explicitly requested.
  */
 export function runRemove(opts: RemoveOptions): void {
   const cwd = process.cwd()
@@ -49,7 +49,7 @@ export function runRemove(opts: RemoveOptions): void {
       const rest = fs.readdirSync(cbDir)
       if (rest.length === 0) fs.rmdirSync(cbDir)
     } catch {
-      // folder sudah tidak ada
+      // folder no longer exists
     }
   }
 

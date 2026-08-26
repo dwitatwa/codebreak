@@ -33,14 +33,14 @@ function ensureGitignoreEntry(gitignorePath: string, entry: string): boolean {
 }
 
 /**
- * Opt-in codebreak untuk sebuah project:
- * config project (.codebreak/config.json) + skill harness + gitignore docs.
+ * Opt this project into codebreak:
+ * project config (.codebreak/config.json) + harness skill + docs gitignore.
  */
 export async function runInit(opts: InitOptions): Promise<void> {
   const cwd = process.cwd()
   const root = findGitRoot(cwd) ?? cwd
 
-  // 1. Config project — salin config efektif supaya mudah diedit khusus project ini
+  // 1. Project config — copy the effective config so it is easy to tweak per project
   const configDir = path.join(root, '.codebreak')
   const configFile = path.join(configDir, 'config.json')
   if (fs.existsSync(configFile) && !opts.force) {

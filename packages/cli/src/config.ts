@@ -11,9 +11,9 @@ export type Depth = 'overview' | 'block' | 'line'
 export const DEPTHS: Depth[] = ['overview', 'block', 'line']
 
 export interface ProviderConfig {
-  /** Endpoint OpenAI-compatible, termasuk /v1 */
+  /** OpenAI-compatible endpoint, including /v1 */
   baseUrl: string
-  /** Nama env var yang berisi API key (boleh kosong utk server lokal) */
+  /** Name of the env var holding the API key (may be empty for local servers) */
   apiKeyEnv: string
   model: string
 }
@@ -22,9 +22,9 @@ export interface CodebreakConfig {
   provider: ProviderConfig
   outputLocale: string
   depth: Depth
-  /** Budget total karakter konteks yang dikirim ke LLM */
+  /** Total character budget for context sent to the LLM */
   maxContextChars: number
-  /** Maksimum jumlah file yang dipilih oleh pipeline relevance */
+  /** Maximum number of files picked by the relevance pipeline */
   maxRelevantFiles: number
 }
 
@@ -40,13 +40,13 @@ const DEFAULTS: CodebreakConfig = {
   maxRelevantFiles: 10,
 }
 
-/** Path config tingkat user (~/.config/codebreak/config.json) */
+/** User-level config path (~/.config/codebreak/config.json) */
 export function userConfigPath(): string {
   const xdg = process.env.XDG_CONFIG_HOME ?? path.join(os.homedir(), '.config')
   return path.join(xdg, 'codebreak', 'config.json')
 }
 
-/** Path config tingkat project (.codebreak/config.json di root repo); null di luar repo */
+/** Project-level config path (.codebreak/config.json at repo root); null outside a repo */
 export function projectConfigPath(cwd = process.cwd()): string | null {
   const root = findGitRoot(cwd)
   return root ? path.join(root, '.codebreak', 'config.json') : null
@@ -61,7 +61,7 @@ function readConfigFile(file: string): Partial<CodebreakConfig> {
   }
   try {
     const parsed = JSON.parse(raw) as Partial<CodebreakConfig>
-    if (typeof parsed !== 'object' || parsed === null) throw new Error('bukan objek')
+    if (typeof parsed !== 'object' || parsed === null) throw new Error('not an object')
     return parsed
   } catch (err) {
     throw new CodebreakError(`Invalid config at ${file}: ${(err as Error).message}`)
@@ -82,9 +82,9 @@ export interface ConfigSources {
 }
 
 /**
- * Urutan prioritas:
- * defaults ← user global ← project (.codebreak/config.json) ← environment.
- * Env yang didukung: CODEBREAK_BASE_URL, CODEBREAK_MODEL, CODEBREAK_DEPTH.
+ * Priority order:
+ * defaults ← global user ← project (.codebreak/config.json) ← environment.
+ * Supported env vars: CODEBREAK_BASE_URL, CODEBREAK_MODEL, CODEBREAK_DEPTH.
  */
 export function loadConfig(): CodebreakConfig {
   let cfg = DEFAULTS
@@ -111,7 +111,7 @@ export function loadConfig(): CodebreakConfig {
   return cfg
 }
 
-/** Info sumber config aktif (dipakai doctor) */
+/** Info about the active config sources (used by doctor) */
 export function describeConfigSources(): ConfigSources {
   const user = userConfigPath()
   const project = projectConfigPath()
@@ -121,12 +121,12 @@ export function describeConfigSources(): ConfigSources {
   }
 }
 
-/** Path config user — dipakai pesan error factory & doctor */
+/** User config path — used in error messages by factory & doctor */
 export function describeConfigLocation(): string {
   return userConfigPath()
 }
 
-/** Resolve API key dari env; boleh undefined untuk server lokal tanpa auth */
+/** Resolve the API key from env; may be undefined for local servers without auth */
 export function resolveApiKey(cfg: CodebreakConfig): string | undefined {
   return process.env.CODEBREAK_API_KEY ?? process.env[cfg.provider.apiKeyEnv] ?? undefined
 }

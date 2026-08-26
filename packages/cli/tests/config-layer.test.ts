@@ -10,12 +10,12 @@ const savedEnv = { ...process.env }
 
 function makeProject(): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'codebreak-cfg-'))
-  // marker repo git (findGitRoot cukup melihat keberadaan .git)
+  // git repo marker (findGitRoot only checks for the presence of .git)
   fs.mkdirSync(path.join(dir, '.git'))
   return dir
 }
 
-describe('config berlapis', () => {
+describe('layered config', () => {
   let userHome: string
   let project: string
 
@@ -44,12 +44,12 @@ describe('config berlapis', () => {
     fs.rmSync(userHome, { recursive: true, force: true })
   })
 
-  it('tanpa config project → nilai user dipakai', () => {
+  it('no project config → user values are used', () => {
     expect(loadConfig().provider.model).toBe('user-model')
     expect(loadConfig().outputLocale).toBe('en')
   })
 
-  it('config project menimpa sebagian nilai user', () => {
+  it('project config overrides some user values', () => {
     fs.mkdirSync(path.join(project, '.codebreak'), { recursive: true })
     fs.writeFileSync(
       projectConfigPath()!,
@@ -57,18 +57,18 @@ describe('config berlapis', () => {
     )
     const cfg = loadConfig()
     expect(cfg.provider.model).toBe('project-model')
-    // yang tidak dioverride turun dari layer user
+    // values that are not overridden fall back to the user layer
     expect(cfg.outputLocale).toBe('en')
     expect(cfg.depth).toBe('line')
   })
 
-  it('env paling kuat di atas semuanya', () => {
+  it('env wins over everything else', () => {
     fs.mkdirSync(path.join(project, '.codebreak'), { recursive: true })
     process.env.CODEBREAK_MODEL = 'env-model'
     expect(loadConfig().provider.model).toBe('env-model')
   })
 
-  it('di luar repo → tidak ada layer project', () => {
+  it('outside a repo → no project layer', () => {
     process.chdir(os.tmpdir())
     expect(projectConfigPath()).toBeNull()
     process.chdir(project)
@@ -76,7 +76,7 @@ describe('config berlapis', () => {
 })
 
 describe('binScriptName', () => {
-  it('di linux tanpa akhiran .cmd', () => {
+  it('on linux without the .cmd suffix', () => {
     if (process.platform !== 'win32') {
       expect(binScriptName('vite')).toBe('vite')
     }

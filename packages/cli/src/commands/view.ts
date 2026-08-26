@@ -17,9 +17,9 @@ export interface ViewOptions {
 }
 
 /**
- * Jalankan web viewer lokal untuk repo aktif — server berjalan in-process
- * di atas Bun.serve. Proses tetap hidup sampai Ctrl+C; dokumen baru hasil
- * `codebreak explain`/`add` otomatis muncul lewat SSE reload.
+ * Run the local web viewer for the active repo — the server runs in-process
+ * on top of Bun.serve. The process stays alive until Ctrl+C; new docs from
+ * `codebreak explain`/`add` show up automatically via SSE reload.
  */
 export async function runView(opts: ViewOptions = {}): Promise<void> {
   const docsDir = docsDirFor(process.cwd())
@@ -38,6 +38,6 @@ export async function runView(opts: ViewOptions = {}): Promise<void> {
     console.log(pc.yellow(`No browser opener found — open manually: ${url}`))
   }
 
-  // Bun.serve menjaga event loop tetap hidup; promise ini hanya membuat niatnya eksplisit.
+  // Bun.serve keeps the event loop alive; this promise just makes the intent explicit.
   await new Promise(() => {})
 }

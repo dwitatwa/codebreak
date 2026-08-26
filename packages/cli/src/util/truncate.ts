@@ -5,8 +5,8 @@ export interface TruncatedText {
 }
 
 /**
- * Potong teks dari tengah, sisakan kepala + ekor, dengan penanda jelas
- * agar LLM tahu ada bagian yang hilang.
+ * Truncate text from the middle, keeping head + tail, with a clear marker
+ * so the LLM knows a portion is missing.
  */
 export function truncateMiddle(text: string, maxChars: number): TruncatedText {
   if (maxChars <= 0 || text.length <= maxChars) {
@@ -23,7 +23,7 @@ export function truncateMiddle(text: string, maxChars: number): TruncatedText {
   }
 }
 
-/** Estimasi kasar jumlah token dari panjang karakter (~4 char/token) */
+/** Rough estimate of token count from character length (~4 chars/token) */
 export function estimateTokens(chars: number): number {
   return Math.ceil(chars / 4)
 }

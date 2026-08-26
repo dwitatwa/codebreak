@@ -16,7 +16,7 @@ export interface DocFrontmatter {
 
 export interface EmittedDoc {
   absPath: string
-  /** Path relatif dari repo/cwd, mis. .codebreak/docs/2026-08-25-foo.mdx */
+  /** Path relative to the repo/cwd, e.g. .codebreak/docs/2026-08-25-foo.mdx */
   relPath: string
 }
 
@@ -40,7 +40,7 @@ interface ReservedDocFile {
   relPath: string
 }
 
-/** Tentukan path dokumen unik <cwd>/.codebreak/docs/YYYY-MM-DD-<slug>.mdx (sufiks -2, -3, …) */
+/** Reserve a unique document path <cwd>/.codebreak/docs/YYYY-MM-DD-<slug>.mdx (-2, -3, … suffixes) */
 function reserveDocFile(cwd: string, title: string): ReservedDocFile {
   const docsDir = path.join(cwd, '.codebreak', 'docs')
   fs.mkdirSync(docsDir, { recursive: true })
@@ -56,8 +56,8 @@ function reserveDocFile(cwd: string, title: string): ReservedDocFile {
 }
 
 /**
- * Tulis dokumen ke <cwd>/.codebreak/docs/YYYY-MM-DD-<slug>.mdx.
- * Kalau nama sudah ada, tambah sufiks -2, -3, dst.
+ * Write the document to <cwd>/.codebreak/docs/YYYY-MM-DD-<slug>.mdx.
+ * If the name already exists, append a -2, -3, etc. suffix.
  */
 export function emitDoc(cwd: string, body: string, fm: DocFrontmatter): EmittedDoc {
   const doc = reserveDocFile(cwd, fm.title)
@@ -67,8 +67,8 @@ export function emitDoc(cwd: string, body: string, fm: DocFrontmatter): EmittedD
 }
 
 /**
- * Tulis dokumen hasil agen eksternal (mis. agent harness) dengan frontmatter bebas.
- * CLI hanya menjamin penamaan file & serialisasi YAML yang valid.
+ * Write a document produced by an external agent (e.g. an agent harness) with free-form frontmatter.
+ * The CLI only guarantees valid file naming & YAML serialization.
  */
 export function writeAgentDoc(
   cwd: string,
@@ -82,7 +82,7 @@ export function writeAgentDoc(
   return doc
 }
 
-/** Buang frontmatter kalau model menyelundupkannya, plus fence pembungkus utuh */
+/** Strip frontmatter if the model smuggles it in, plus unwrap a full enclosing code fence */
 export function sanitizeBody(raw: string): string {
   let body = raw.trim()
   body = body.replace(/^```(?:markdown|md)\s*\n([\s\S]*?)\n```\s*$/, '$1')
@@ -95,13 +95,13 @@ export function sanitizeBody(raw: string): string {
 
 const TLDR_RE = /^##\s+(Ringkasan|Summary)\s*\n([\s\S]*?)(?=\n##\s|\s*$)/i
 
-/** Ekstrak seksi TL;DR untuk dicetak ke terminal; '' jika tidak ketemu */
+/** Extract the TL;DR section for printing to the terminal; '' if not found */
 export function extractTldr(body: string): string {
   const m = TLDR_RE.exec(body)
   if (!m?.[2]) return ''
   return m[2]
     .split('\n')
-    // buang elemen HTML yang tidak informatif di terminal
+    // drop HTML elements that aren't informative in the terminal
     .filter((line) => !/^\s*<\/?(details|summary)/i.test(line))
     .join('\n')
     .trim()

@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 /**
- * Build-time only: mengompilasi frontend shell menjadi aset statis.
- * Tidak ada hubungannya dengan runtime — server dokumen ada di
+ * Build-time only: compiles the frontend shell into static assets.
+ * Nothing to do with the runtime — the document server lives in
  * packages/cli/src/viewer/server.ts (Bun.serve).
  */
 export default defineConfig({

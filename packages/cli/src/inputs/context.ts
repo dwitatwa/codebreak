@@ -6,16 +6,16 @@ export type InputRequest =
   | { kind: 'file'; target: string }
   | { kind: 'description'; text: string }
 
-/** Konteks yang sudah dikumpulkan dan siap dimasukkan ke prompt LLM */
+/** Context that has been gathered and is ready to inject into the LLM prompt */
 export interface GatheredContext {
   kind: ContextKind
-  /** Judul singkat untuk dokumen */
+  /** Short title for the document */
   title: string
-  /** Label sumber, mis. "local changes", "commit HEAD", "src/auth/" */
+  /** Source label, e.g. "local changes", "commit HEAD", "src/auth/" */
   sourceLabel: string
-  /** Material mentah (diff / isi file) yang akan di-inject ke prompt */
+  /** Raw material (diff / file contents) to inject into the prompt */
   material: string
-  /** File yang dilibatkan (khusus mode description/relevance) */
+  /** Files involved (description/relevance modes only) */
   selectedFiles?: string[]
   truncated?: boolean
 }

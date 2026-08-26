@@ -15,7 +15,7 @@ export interface ParsedDocFile {
   body: string
 }
 
-/** Pisahkan frontmatter YAML dari isi dokumen */
+/** Split the YAML frontmatter from the document body */
 export function splitFrontmatter(raw: string): ParsedDocFile {
   const m = /^---\r?\n([\s\S]*?)\r?\n---\s*\n?/.exec(raw)
   if (!m?.[1]) return { frontmatter: {}, body: raw }
@@ -24,7 +24,7 @@ export function splitFrontmatter(raw: string): ParsedDocFile {
     const parsed = yaml.load(m[1])
     if (typeof parsed === 'object' && parsed !== null) fm = parsed as Record<string, unknown>
   } catch {
-    // frontmatter rusak — diperlakukan sebagai dokumen tanpa metadata
+    // broken frontmatter — treated as a document without metadata
   }
   return { frontmatter: fm, body: raw.slice(m[0].length).trim() }
 }

@@ -17,9 +17,9 @@ export interface ExplainOptions {
   input: InputRequest
   /** --lang ts,js */
   lang?: string[]
-  /** --focus "teks" */
+  /** --focus "text" */
   focus?: string
-  /** --context + isi stdin pipe (sudah digabung caller) */
+  /** --context + piped stdin content (already merged by the caller) */
   extraContext?: string
   /** override config.depth */
   depth?: Depth
@@ -32,7 +32,7 @@ export interface ExplainDeps {
   provider: LlmProvider
   cwd: string
   cfg: CodebreakConfig
-  /** Progress reporting untuk spinner CLI */
+  /** Progress reporting for the CLI spinner */
   stage?(msg: string): void
 }
 
@@ -47,8 +47,8 @@ export interface ExplainResult {
 }
 
 /**
- * Orkestrator inti yang bebas dari terminal I/O supaya mudah dites:
- * resolve mode → kumpulkan konteks → prompt LLM → emit dokumen MDX.
+ * Core orchestrator kept free of terminal I/O so it is easy to test:
+ * resolve mode → gather context → prompt the LLM → emit the MDX document.
  */
 export async function explain(deps: ExplainDeps, opts: ExplainOptions): Promise<ExplainResult> {
   const stage = deps.stage ?? (() => {})

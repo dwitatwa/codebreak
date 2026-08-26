@@ -9,7 +9,7 @@ function tmpDir(): string {
 }
 
 describe('resolveInput', () => {
-  it('path file yang ada → mode file', () => {
+  it('existing file path → file mode', () => {
     const dir = tmpDir()
     const file = path.join(dir, 'a.ts')
     fs.writeFileSync(file, 'x')
@@ -17,39 +17,39 @@ describe('resolveInput', () => {
     expect(req.kind).toBe('file')
   })
 
-  it('path folder yang ada → mode file (direktori)', () => {
+  it('existing folder path → file mode (directory)', () => {
     const dir = tmpDir()
     const req = resolveInput({ positional: dir })
     expect(req.kind).toBe('file')
     if (req.kind === 'file') expect(req.target).toBe(fs.realpathSync(dir))
   })
 
-  it('posisional yang tidak ada di disk → description', () => {
+  it('positional that does not exist on disk → description', () => {
     const req = resolveInput({ positional: 'user authentication flow' })
     expect(req.kind).toBe('description')
     expect((req as { text: string }).text).toBe('user authentication flow')
   })
 
-  it('--changes menang atas posisional', () => {
-    const req = resolveInput({ positional: 'apa aja', changes: true })
+  it('--changes wins over positional', () => {
+    const req = resolveInput({ positional: 'anything at all', changes: true })
     expect(req.kind).toBe('changes')
   })
 
-  it('--commit dipakai tanpa --changes', () => {
+  it('--commit is used without --changes', () => {
     const req = resolveInput({ commit: 'HEAD~1..HEAD' })
     expect(req.kind).toBe('commit')
     expect((req as { ref: string }).ref).toBe('HEAD~1..HEAD')
   })
 
-  it('tanpa input → error dengan pesan jelas', () => {
+  it('no input → error with a clear message', () => {
     expect(() => resolveInput({})).toThrow(/Provide an input/)
   })
 
-  it('--changes + --commit bersamaan → error', () => {
+  it('--changes + --commit together → error', () => {
     expect(() => resolveInput({ changes: true, commit: 'HEAD' })).toThrow(/only one of/)
   })
 
-  it('deskripsi berawalan seperti path tetap jadi description', () => {
+  it('description that looks like a path stays a description', () => {
     const req = resolveInput({ positional: 'how does src/auth work' })
     expect(req.kind).toBe('description')
   })

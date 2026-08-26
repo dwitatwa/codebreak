@@ -8,35 +8,37 @@ import { writeAgentDoc } from '../src/render/mdx.js'
 const DOC_WITH_FM = `---
 title: Auth Flow
 type: description
-source: pertanyaan user
-locale: id
+source: user question
+locale: en
 ---
 
-## Ringkasan
+## Summary
 
-- Login memakai JWT
+- Login uses JWT
 `
 
 const DOC_PLAIN = `# Payment Webhook
 
-## Ringkasan
+## Summary
 
-- Webhook memvalidasi signature
+- Webhook validates the signature
 `
 
+const TODAY = new Date().toISOString().slice(0, 10)
+
 describe('parseAgentDoc', () => {
-  it('frontmatter ada → dipertahankan dan dinormalisasi', () => {
+  it('frontmatter present → preserved and normalized', () => {
     const { frontmatter, body } = parseAgentDoc(DOC_WITH_FM, {})
     expect(frontmatter.title).toBe('Auth Flow')
     expect(frontmatter.type).toBe('description')
-    expect(frontmatter.source).toBe('pertanyaan user')
-    expect(frontmatter.locale).toBe('id')
+    expect(frontmatter.source).toBe('user question')
+    expect(frontmatter.locale).toBe('en')
     expect(frontmatter.model).toBe('external-agent')
     expect(frontmatter.date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
-    expect(body.startsWith('## Ringkasan')).toBe(true)
+    expect(body.startsWith('## Summary')).toBe(true)
   })
 
-  it('tanpa frontmatter → title dari heading pertama, type default note', () => {
+  it('without frontmatter → title from first heading, type defaults to note', () => {
     const { frontmatter, body } = parseAgentDoc(DOC_PLAIN, {})
     expect(frontmatter.title).toBe('Payment Webhook')
     expect(frontmatter.type).toBe('note')
@@ -44,18 +46,18 @@ describe('parseAgentDoc', () => {
     expect(body.startsWith('# Payment Webhook')).toBe(true)
   })
 
-  it('flag CLI menimpa frontmatter file', () => {
+  it('CLI flags override the file frontmatter', () => {
     const { frontmatter } = parseAgentDoc(DOC_WITH_FM, {
-      title: 'Judul Baru',
+      title: 'New Title',
       type: 'CHANGES',
       source: 'git diff',
     })
-    expect(frontmatter.title).toBe('Judul Baru')
+    expect(frontmatter.title).toBe('New Title')
     expect(frontmatter.type).toBe('changes')
     expect(frontmatter.source).toBe('git diff')
   })
 
-  it('type tak dikenal → note; depth valid ikut, tidak valid dibuang', () => {
+  it('unknown type → note; valid depth is kept, invalid is dropped', () => {
     const { frontmatter: a } = parseAgentDoc(DOC_PLAIN, { type: 'hacked' })
     expect(a.type).toBe('note')
 
@@ -67,28 +69,28 @@ describe('parseAgentDoc', () => {
     expect(c.depth).toBeUndefined()
   })
 
-  it('konten kosong → error', () => {
+  it('empty content → error', () => {
     expect(() => parseAgentDoc('   \n', {})).toThrow(/empty/)
   })
 
-  it('frontmatter rusak → dibuang tanpa crash', () => {
-    const broken = '---\n: : : bukan yaml\n---\n\n## Isi\n- x'
+  it('broken frontmatter → discarded without crashing', () => {
+    const broken = '---\n: : : not yaml\n---\n\n## Content\n- x'
     const { body } = parseAgentDoc(broken, {})
-    expect(body).toContain('## Isi')
+    expect(body).toContain('## Content')
   })
 })
 
 describe('writeAgentDoc', () => {
-  it('menulis file dengan frontmatter bebas + collision suffix', () => {
+  it('writes a file with free-form frontmatter + collision suffix', () => {
     const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'codebreak-add-'))
-    const fm = { title: 'Agent Notes', type: 'note', date: '2026-08-25', model: 'external-agent' }
-    const first = writeAgentDoc(cwd, fm, '- satu')
-    const second = writeAgentDoc(cwd, fm, '- dua')
-    expect(first.relPath).toMatch(/2026-08-25-agent-notes\.mdx$/)
+    const fm = { title: 'Agent Notes', type: 'note', date: TODAY, model: 'external-agent' }
+    const first = writeAgentDoc(cwd, fm, '- one')
+    const second = writeAgentDoc(cwd, fm, '- two')
+    expect(first.relPath).toMatch(new RegExp(`${TODAY}-agent-notes\\.mdx$`))
     expect(second.relPath).toMatch(/agent-notes-2\.mdx$/)
     const content = fs.readFileSync(first.absPath, 'utf8')
     expect(content).toContain('model: external-agent')
-    expect(content.trimEnd().endsWith('- satu')).toBe(true)
+    expect(content.trimEnd().endsWith('- one')).toBe(true)
     fs.rmSync(cwd, { recursive: true, force: true })
   })
 })

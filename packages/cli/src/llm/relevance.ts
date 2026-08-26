@@ -12,7 +12,7 @@ export interface SelectOptions {
   maxFiles: number
 }
 
-/** Peta ringkas repository: daftar path relatif (sudah difilter gitignore & ekstensi) */
+/** Compact repo map: list of relative paths (already filtered by gitignore & extension) */
 export function buildRepoMap(rootDir: string, extensions?: Set<string>): string {
   const rels = walkFiles(rootDir, { extensions, maxFiles: 2500 })
   if (rels.length === 0) return ''
@@ -31,8 +31,8 @@ const SELECT_SYSTEM = [
 ].join('\n')
 
 /**
- * Pipeline relevance v1: repo map → LLM pilih maks N file → validasi keberadaan.
- * Satu ronde seleksi; agent-loop multi-ronde disengaja untuk versi berikutnya.
+ * Relevance pipeline v1: repo map → LLM picks up to N files → validate existence.
+ * A single selection round; a multi-round agent loop is intentionally left for a later version.
  */
 export async function selectRelevantFiles(
   rootDir: string,
@@ -89,7 +89,7 @@ export async function selectRelevantFiles(
   return valid
 }
 
-/** Ambil objek JSON dari balasan LLM, toleran terhadap code fence dan basa-basi */
+/** Extract a JSON object from an LLM reply, tolerating code fences and preamble chatter */
 export function extractJson(text: string): Record<string, unknown> | null {
   let t = text.trim()
   const fence = /```(?:json)?\s*([\s\S]*?)```/.exec(t)
