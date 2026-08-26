@@ -1,6 +1,6 @@
 {
   "name": "@codebreak/cli",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "type": "module",
   "license": "MIT",
   "description": "LLM-powered code explainer CLI — changes, commits, files, feature descriptions → interactive MDX docs",
