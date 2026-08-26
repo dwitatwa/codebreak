@@ -119,6 +119,7 @@ cat notes.md | codebreak explain --changes # stdin as extra context
 codebreak view        # local server + opens browser; leave running for live updates
 codebreak view --port 3000 --no-open
 codebreak doctor
+codebreak upgrade     # self-update to the latest GitHub release (binary installs)
 ```
 
 Documents are stored at `<repo>/.codebreak/docs/*.mdx`. Since they are local artifacts,
@@ -181,6 +182,9 @@ To publish a release, create one on GitHub and upload the binaries from
 `packages/cli/dist-binaries/` (e.g. with the GitHub web UI or `gh release create
 v0.2.0 dist-binaries/*`). The `install.sh` / `install.ps1` scripts download from the
 latest release, so publish at least one release for them to work.
+
+Already installed? `codebreak upgrade` pulls the latest release and swaps the binary
+in place — no manual reinstall needed (standalone binary installs only).
 
 ## Project structure
 

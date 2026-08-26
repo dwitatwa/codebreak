@@ -118,6 +118,15 @@ program
     runRemove({ docs: opts.docs, all: opts.all, keepSkills: opts.keepSkills })
   })
 
+program
+  .command('upgrade')
+  .description('Upgrade codebreak to the latest GitHub release (standalone binary installs)')
+  .option('--check', 'only check whether a newer version is available')
+  .action(async (opts) => {
+    const { runUpgrade } = await import('./commands/upgrade.js')
+    await runUpgrade({ check: opts.check })
+  })
+
 program.command('doctor').description('Check config, LLM connectivity, git, and the viewer').action(runDoctor)
 
 async function main(): Promise<void> {
