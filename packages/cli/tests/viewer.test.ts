@@ -92,6 +92,17 @@ describe('renderDoc — viewer components', () => {
     expect(res.ok).toBe(true)
     expect(res.html).toContain('Summary')
   })
+
+  it('falls back to plain markdown (degraded) when MDX compilation fails', async () => {
+    // stray `{` cannot be fixed by escaping < — MDX compilation fails
+    const res = await renderDoc('## Summary\n\nan unclosed brace { breaks MDX too')
+    expect(res.ok).toBe(true)
+    expect(res.degraded).toBe(true)
+    expect(res.error).toBeTruthy()
+    expect(res.html).toContain('<h2')
+    expect(res.html).toContain('Summary')
+    expect(res.html).toContain('unclosed brace')
+  })
 })
 
 describe('parseLineRange', () => {

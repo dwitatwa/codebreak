@@ -3,9 +3,13 @@ import * as jsxRuntime from 'react/jsx-runtime'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import rehypeSlug from 'rehype-slug'
+import rehypeStringify from 'rehype-stringify'
 import remarkGfm from 'remark-gfm'
+import remarkParse from 'remark-parse'
+import remarkRehype from 'remark-rehype'
 import rehypeShikiFromHighlighter from '@shikijs/rehype/core'
 import { createHighlighter, type Highlighter } from 'shiki'
+import { unified } from 'unified'
 import { docComponents } from './components.js'
 
 let highlighterPromise: Promise<Highlighter> | undefined
@@ -26,6 +30,8 @@ export interface RenderedDoc {
   ok: boolean
   html: string
   error?: string
+  /** true when MDX compilation failed and the doc was rendered as plain markdown instead */
+  degraded?: boolean
 }
 
 /**
@@ -64,6 +70,24 @@ export function postProcessHtml(html: string): string {
  *    resolved through the components map, or
  *  - legacy plain HTML/markdown (old docs), which renders as today.
  */
+/**
+ * Last-resort render for documents whose MDX compilation fails (e.g. saved
+ * before ingest-time repair): plain markdown → HTML. Viewer components won't
+ * work here, but prose, headings, and code blocks still render readably.
+ */
+async function renderPlainMarkdown(raw: string): Promise<string> {
+  const highlighter = await getHighlighter()
+  const file = await unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeSlug)
+    .use(rehypeShikiFromHighlighter, highlighter, { theme: 'github-dark' })
+    .use(rehypeStringify, { allowDangerousHtml: true })
+    .process(raw)
+  return String(file)
+}
+
 export async function renderDoc(raw: string): Promise<RenderedDoc> {
   try {
     const highlighter = await getHighlighter()
@@ -82,6 +106,10 @@ export async function renderDoc(raw: string): Promise<RenderedDoc> {
     const usesComponents = /<Block|<CodeBlock|<LineNotes|<Note\b/.test(raw)
     return { ok: true, html: usesComponents ? html : postProcessHtml(html) }
   } catch (err) {
-    return { ok: false, html: '', error: String(err) }
+    try {
+      return { ok: true, html: await renderPlainMarkdown(raw), degraded: true, error: String(err) }
+    } catch {
+      return { ok: false, html: '', error: String(err) }
+    }
   }
 }

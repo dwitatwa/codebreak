@@ -12,6 +12,8 @@ export interface FetchedDoc {
   ok: boolean
   html: string
   error?: string
+  /** MDX compilation failed; html is a plain-markdown fallback render */
+  degraded?: boolean
   files?: string[]
 }
 

@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'bun:test'
-import { emitDoc, extractTldr, sanitizeBody, slugify } from '../src/render/mdx.js'
+import { emitDoc, extractTldr, repairMdxBody, sanitizeBody, slugify } from '../src/render/mdx.js'
 import type { DocFrontmatter } from '../src/render/mdx.js'
 
 const TODAY = new Date().toISOString().slice(0, 10)
@@ -80,5 +80,56 @@ describe('extractTldr', () => {
 
   it('empty when missing', () => {
     expect(extractTldr('no heading')).toBe('')
+  })
+})
+
+describe('repairMdxBody', () => {
+  it('leaves a valid document untouched', async () => {
+    const body = '# Title\n\n## Summary\n- fine\n\nUse `a < b` in prose.'
+    const res = await repairMdxBody(body)
+    expect(res.repaired).toBe(false)
+    expect(res.body).toBe(body)
+  })
+
+  it('escapes stray < in prose (generics, JSX-like tags)', async () => {
+    const body = '## Summary\n\nUses `Map<string, number>` and returns Array<int> here.'
+    const res = await repairMdxBody(body)
+    expect(res.repaired).toBe(true)
+    expect(res.body).toContain('returns Array&lt;int> here.')
+  })
+
+  it("doesn't touch < inside inline code spans", async () => {
+    const body = '## Summary\n\nthe span `a < b` stays literal'
+    const res = await repairMdxBody(body)
+    expect(res.repaired).toBe(false)
+    expect(res.body).toBe(body)
+  })
+
+  it("doesn't touch < inside code fences or allowed components", async () => {
+    const body = [
+      '<Block name="fn" lines="1-3">',
+      '  <CodeBlock lang="ts">',
+      '',
+      '    ```ts',
+      '    if (a < b) return',
+      '    ```',
+      '',
+      '  </CodeBlock>',
+      '</Block>',
+      '',
+      'Returns Array<y> shapes.',
+    ].join('\n')
+    const res = await repairMdxBody(body)
+    expect(res.repaired).toBe(true)
+    expect(res.body).toContain('if (a < b) return')
+    expect(res.body).toContain('<Block name="fn" lines="1-3">')
+    expect(res.body).toContain('Array&lt;y> shapes.')
+  })
+
+  it('returns the original when the damage is not fixable by escaping', async () => {
+    const body = '## Summary\n\nan unclosed brace { breaks MDX too'
+    const res = await repairMdxBody(body)
+    expect(res.repaired).toBe(false)
+    expect(res.body).toBe(body)
   })
 })

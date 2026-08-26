@@ -27,6 +27,7 @@ export default function DocPage() {
   const { slug = '' } = useParams()
   const [html, setHtml] = useState<string | null>(null)
   const [compileError, setCompileError] = useState<string | null>(null)
+  const [degraded, setDegraded] = useState(false)
   const [rawContent, setRawContent] = useState<string>('')
   const [meta, setMeta] = useState<DocMeta | null>(null)
   const [files, setFiles] = useState<string[]>([])
@@ -39,6 +40,7 @@ export default function DocPage() {
     let alive = true
     setHtml(null)
     setCompileError(null)
+    setDegraded(false)
     setRawContent('')
     setToc([])
 
@@ -55,6 +57,7 @@ export default function DocPage() {
         void loadRaw(slug).then((raw) => alive && setRawContent(raw))
       } else {
         setHtml(doc.html)
+        setDegraded(doc.degraded ?? false)
         setFiles(doc.files ?? [])
       }
     })
@@ -248,6 +251,21 @@ export default function DocPage() {
               {rawContent || compileError}
             </pre>
           </>
+        )}
+
+        {degraded && html !== null && (
+          <div
+            className="mb-4 rounded-lg p-3 text-xs"
+            style={{
+              backgroundColor: 'rgba(230,180,80,0.1)',
+              border: '1px solid rgba(230,180,80,0.3)',
+              color: '#d9b96a',
+            }}
+          >
+            This document contains invalid MDX (likely a stray{' '}
+            <code>&lt;</code> character) — showing a plain-markdown fallback. Interactive
+            blocks are disabled.
+          </div>
         )}
 
         {html !== null && (

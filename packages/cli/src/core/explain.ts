@@ -11,7 +11,7 @@ import type { GatheredContext, InputRequest } from '../inputs/context.js'
 import { buildSystemPrompt, buildUserPrompt, localeName, tldrHeading } from '../llm/prompts.js'
 import { selectRelevantFiles } from '../llm/relevance.js'
 import type { LlmProvider } from '../llm/types.js'
-import { emitDoc, extractTldr, sanitizeBody, type DocFrontmatter } from '../render/mdx.js'
+import { emitDoc, extractTldr, repairMdxBody, sanitizeBody, type DocFrontmatter } from '../render/mdx.js'
 
 export interface ExplainOptions {
   input: InputRequest
@@ -85,11 +85,12 @@ export async function explain(deps: ExplainDeps, opts: ExplainOptions): Promise<
 
   stage(`Analyzing with ${deps.provider.model}…`)
   const raw = await deps.provider.complete({ system, user })
-  const body = sanitizeBody(raw)
+  const sanitized = sanitizeBody(raw)
 
-  if (!body.trim()) {
+  if (!sanitized.trim()) {
     throw new Error('The LLM returned an empty answer.')
   }
+  const { body } = await repairMdxBody(sanitized)
 
   const fm: DocFrontmatter = {
     title: ctx.title,

@@ -1,5 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { compile } from '@mdx-js/mdx'
+import remarkGfm from 'remark-gfm'
 import { stringify } from 'yaml'
 import type { Depth } from '../config.js'
 import type { ContextKind } from '../inputs/context.js'
@@ -108,4 +110,66 @@ export function extractTldr(body: string): string {
     .split('\n')
     .slice(0, 40)
     .join('\n')
+}
+
+/** The only JSX elements a document may use (see the skill's MDX-safety contract) */
+const ALLOWED_TAGS = /<(?!\/?(?:Block|CodeBlock|LineNotes|Note)(?=[\s/>]))/g
+
+async function mdxCompiles(body: string): Promise<boolean> {
+  try {
+    await compile(body, { remarkPlugins: [remarkGfm] })
+    return true
+  } catch {
+    return false
+  }
+}
+
+function escapeStrayLtInLine(line: string): string {
+  let out = ''
+  let last = 0
+  for (const m of line.matchAll(/(`+)[^`]*?\1/g)) {
+    const start = m.index ?? 0
+    out += line.slice(last, start).replace(ALLOWED_TAGS, '&lt;') + m[0]
+    last = start + m[0].length
+  }
+  return out + line.slice(last).replace(ALLOWED_TAGS, '&lt;')
+}
+
+/**
+ * Escape bare `<` outside code fences and inline code spans, leaving the
+ * allowed viewer components untouched. `<` in code is already safe — MDX only
+ * chokes on it in prose.
+ */
+function escapeStrayLt(body: string): string {
+  let inFence = false
+  return body
+    .split('\n')
+    .map((line) => {
+      if (/^\s*(?:```|~~~)/.test(line)) {
+        inFence = !inFence
+        return line
+      }
+      return inFence ? line : escapeStrayLtInLine(line)
+    })
+    .join('\n')
+}
+
+export interface RepairedBody {
+  body: string
+  /** true if escaping was needed to make the body compile as MDX */
+  repaired: boolean
+}
+
+/**
+ * Ensure an LLM/agent-authored body compiles as MDX. Documents that already
+ * compile pass through untouched; otherwise bare `<` characters (generics,
+ * comparisons, arrows…) are escaped and the result is re-checked. If it still
+ * doesn't compile, the original body is returned and the viewer falls back to
+ * plain-markdown rendering.
+ */
+export async function repairMdxBody(raw: string): Promise<RepairedBody> {
+  if (await mdxCompiles(raw)) return { body: raw, repaired: false }
+  const escaped = escapeStrayLt(raw)
+  if (escaped !== raw && (await mdxCompiles(escaped))) return { body: escaped, repaired: true }
+  return { body: raw, repaired: false }
 }

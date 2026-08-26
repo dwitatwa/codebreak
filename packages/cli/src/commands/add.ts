@@ -3,7 +3,7 @@ import path from 'node:path'
 import pc from 'picocolors'
 import { parse as parseYaml } from 'yaml'
 import { CodebreakError } from '../errors.js'
-import { writeAgentDoc } from '../render/mdx.js'
+import { repairMdxBody, writeAgentDoc } from '../render/mdx.js'
 
 export interface AddFlags {
   title?: string
@@ -86,7 +86,11 @@ export async function runAdd(target: string | undefined, flags: AddFlags): Promi
   }
 
   const { frontmatter, body } = parseAgentDoc(raw, flags)
-  const doc = writeAgentDoc(process.cwd(), frontmatter, body)
+  const repaired = await repairMdxBody(body)
+  if (repaired.repaired) {
+    console.log(pc.yellow('⚠ Fixed invalid MDX (escaped stray < characters in the prose).'))
+  }
+  const doc = writeAgentDoc(process.cwd(), frontmatter, repaired.body)
 
   console.log(`✔ Document saved: ${pc.bold(doc.relPath)}`)
   console.log(pc.dim('Open the viewer: codebreak view'))
